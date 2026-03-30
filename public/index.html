@@ -1,0 +1,2927 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>통합 매출현황_2026Q1_v3_최종.xlsx - Excel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', 'Malgun Gothic', Calibri, sans-serif; background: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* 닉네임 입력 */
+    #login {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #f0f0f0; border: 1px solid #999; padding: 24px 32px;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.2); z-index: 200;
+    }
+    #login h1 { font-size: 13px; font-weight: normal; margin-bottom: 12px; color: #333; }
+    #login input {
+      padding: 4px 6px; font-size: 12px; border: 1px solid #999; outline: none;
+      width: 180px; font-family: Calibri, sans-serif;
+    }
+    #login input:focus { border-color: #217346; }
+    #login button {
+      margin-left: 8px; padding: 4px 16px; font-size: 11px;
+      background: #217346; color: #fff; border: 1px solid #165a32; cursor: pointer;
+    }
+    #login button:hover { background: #165a32; }
+
+    /* 엑셀 리본 */
+    #ribbon { background: #217346; flex-shrink: 0; width: 100%; }
+    .title-bar {
+      background: #217346; color: #fff; font-size: 11px; padding: 4px 12px;
+      display: flex; justify-content: center; align-items: center;
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+    .tabs { background: #217346; display: flex; padding: 0 8px; overflow-x: auto; }
+    .tabs span { padding: 4px 14px; font-size: 11px; color: rgba(255,255,255,0.7); cursor: default; user-select: none; white-space: nowrap; }
+    .tabs span.active { background: #f3f3f3; color: #333; border-radius: 3px 3px 0 0; }
+    .toolbar {
+      background: #f3f3f3; border-bottom: 1px solid #d0d0d0; padding: 4px 12px;
+      display: flex; align-items: center; gap: 8px; font-size: 11px; color: #444;
+      overflow-x: auto; min-width: 0;
+    }
+    .toolbar select, .toolbar input { font-size: 11px; border: 1px solid #c0c0c0; padding: 1px 4px; background: #fff; }
+    .toolbar-sep { width: 1px; height: 18px; background: #c0c0c0; }
+    .toolbar-btn { padding: 2px 6px; cursor: pointer; border: 1px solid transparent; border-radius: 2px; user-select: none; }
+    .toolbar-btn:hover { background: #ddd; border-color: #bbb; }
+    .toolbar-btn.bold { font-weight: bold; }
+    .toolbar-btn.italic { font-style: italic; }
+    .toolbar-btn.underline { text-decoration: underline; }
+
+    /* 수식 입력줄 */
+    #formulaBar {
+      display: flex; align-items: center; border-bottom: 1px solid #c0c0c0;
+      background: #fff; flex-shrink: 0; width: 100%;
+    }
+    #formulaBar .cell-ref {
+      width: 80px; text-align: center; font-size: 11px; border-right: 1px solid #c0c0c0;
+      padding: 4px; color: #333; background: #f9f9f9; user-select: none;
+    }
+    #formulaBar .fx { padding: 4px 8px; font-size: 11px; color: #666; border-right: 1px solid #c0c0c0; font-style: italic; user-select: none; }
+    #formulaBar input {
+      flex: 1; border: none; outline: none; padding: 4px 8px; font-size: 11px;
+      font-family: Calibri, sans-serif;
+    }
+
+    /* 시트 영역 */
+    #sheet { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #fff; position: relative; width: 100%; min-width: 0; }
+
+    /* ===== 채팅모드 ===== */
+    #chatMode { flex: 1; display: flex; flex-direction: column; overflow: hidden; width: 100%; }
+    #colHeader {
+      display: flex; border-bottom: 1px solid #c0c0c0; background: #f5f5f5; flex-shrink: 0; width: 100%;
+    }
+    #colHeader .rh { width: 30px; flex-shrink: 0; border-right: 1px solid #c0c0c0; }
+    #colHeader .col {
+      text-align: center; font-size: 11px; color: #333; padding: 3px 0;
+      border-right: 1px solid #d8d8d8; font-weight: normal; user-select: none;
+    }
+    #colHeader .col-a { width: 30px; flex-shrink: 0; }
+    #colHeader .col-b { flex: 2; min-width: 0; overflow: hidden; }
+    #colHeader .col-c { flex: 5; min-width: 0; overflow: hidden; }
+    #colHeader .col-d { width: 50px; flex-shrink: 0; }
+    #messages { flex: 1; overflow-y: auto; font-size: 11px; width: 100%; }
+    .row { display: flex; border-bottom: 1px solid #e8e8e8; min-height: 20px; width: 100%; }
+    .row:hover { background: #e8f0fe; }
+    .row .row-num {
+      width: 30px; text-align: center; color: #888; font-size: 10px;
+      border-right: 1px solid #d8d8d8; background: #f9f9f9; padding: 3px 0; flex-shrink: 0;
+    }
+    .row .cell { padding: 3px 6px; border-right: 1px solid #e8e8e8; color: #333; font-family: Calibri, 'Malgun Gothic', sans-serif; font-size: 11px; line-height: 1.4; word-break: break-word; }
+    .row .cell-a { width: 30px; flex-shrink: 0; text-align: center; }
+    .row .cell-b { flex: 2; font-weight: 600; min-width: 0; overflow: hidden; }
+    .row .cell-c { flex: 5; min-width: 0; overflow: hidden; }
+    .row .cell-d { width: 50px; flex-shrink: 0; text-align: right; color: #666; font-size: 10px; }
+    .row.mine .cell-c { color: #1a3a5c; }
+    .row.system { background: #f9f9f9; }
+    .row.system .cell { color: #999; font-style: italic; }
+
+    /* ===== 엑셀모드 ===== */
+    #excelMode { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+    #excelGrid {
+      flex: 1; overflow: auto; position: relative; user-select: none;
+    }
+    #excelGrid table {
+      border-collapse: collapse; table-layout: fixed; width: max-content;
+    }
+    #excelGrid th, #excelGrid td {
+      border: 1px solid #d0d0d0; font-size: 11px; font-family: Calibri, 'Malgun Gothic', sans-serif;
+      padding: 0; height: 21px; min-height: 21px;
+    }
+    #excelGrid th {
+      background: #f5f5f5; color: #333; font-weight: normal; text-align: center;
+      position: sticky; user-select: none;
+    }
+    #excelGrid thead th { top: 0; z-index: 2; }
+    #excelGrid .row-header {
+      width: 40px; min-width: 40px; background: #f5f5f5; text-align: center;
+      position: sticky; left: 0; z-index: 1;
+    }
+    #excelGrid thead th:first-child { z-index: 3; }
+    #excelGrid td {
+      background: #fff; color: #333; cursor: cell; padding: 0 4px;
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+      width: 90px; min-width: 90px;
+    }
+    #excelGrid td.selected {
+      outline: 2px solid #217346; outline-offset: -1px; z-index: 1; position: relative;
+    }
+    #excelGrid td.editing {
+      outline: 2px solid #217346; outline-offset: -1px; padding: 0;
+    }
+    #excelGrid td.editing input {
+      width: 100%; height: 100%; border: none; outline: none; font-size: 11px;
+      font-family: Calibri, 'Malgun Gothic', sans-serif; padding: 0 4px;
+    }
+    #excelGrid td.formula-result { color: #333; }
+    #excelGrid td.number { text-align: right; }
+
+    /* ===== 오목모드 ===== */
+    #gomokuMode { flex: 1; display: none; flex-direction: column; align-items: center; overflow: auto; background: #fff; padding: 8px; }
+    #gomokuInfo {
+      font-size: 11px; color: #444; margin-bottom: 6px; display: flex; align-items: center; gap: 16px;
+    }
+    #gomokuInfo .stone-preview {
+      display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 3px;
+    }
+    #gomokuInfo .stone-black { background: radial-gradient(circle at 35% 35%, #555, #000); }
+    #gomokuInfo .stone-white { background: radial-gradient(circle at 35% 35%, #fff, #ccc); border: 1px solid #999; }
+    #gomokuBoard {
+      display: inline-block; border: 1px solid #999; background: #f5f5f5; user-select: none;
+    }
+    #gomokuBoard table { border-collapse: collapse; }
+    #gomokuBoard th {
+      width: 28px; height: 22px; font-size: 9px; color: #888; font-weight: normal;
+      text-align: center; background: #f0f0f0; border: 1px solid #d0d0d0;
+    }
+    #gomokuBoard td {
+      width: 28px; height: 28px; text-align: center; vertical-align: middle;
+      border: 1px solid #d0d0d0; cursor: pointer; position: relative; background: #fff;
+      font-size: 10px; color: #ddd;
+    }
+    #gomokuBoard td:hover { background: #e8f0fe; }
+    #gomokuBoard td .stone {
+      width: 22px; height: 22px; border-radius: 50%; display: inline-block; vertical-align: middle;
+    }
+    #gomokuBoard td .stone.black { background: radial-gradient(circle at 35% 35%, #555, #000); box-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+    #gomokuBoard td .stone.white { background: radial-gradient(circle at 35% 35%, #fff, #ccc); border: 1px solid #aaa; box-shadow: 1px 1px 2px rgba(0,0,0,0.15); }
+    #gomokuBoard td .stone.last { box-shadow: 0 0 0 2px #e74c3c; }
+    #gomokuBoard td.win-cell { background: #fff3cd; }
+    #gomokuControls { margin-top: 8px; display: flex; gap: 8px; }
+    #gomokuControls button {
+      padding: 3px 14px; font-size: 11px; background: #217346; color: #fff;
+      border: 1px solid #165a32; cursor: pointer;
+    }
+    #gomokuWinOverlay {
+      display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8); color: #fff; padding: 20px 40px; border-radius: 8px;
+      font-size: 16px; z-index: 50; text-align: center;
+    }
+
+    /* ===== 2048 모드 ===== */
+    #game2048Mode { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; background: #fff; gap: 8px; }
+    #game2048Info { font-size: 11px; color: #444; display: flex; gap: 20px; align-items: center; }
+    #game2048Board {
+      display: grid; grid-template-columns: repeat(4, 70px); grid-template-rows: repeat(4, 70px);
+      gap: 4px; background: #bbada0; padding: 4px; border-radius: 4px;
+    }
+    .tile-2048 {
+      width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700; border-radius: 3px;
+      font-family: Calibri, sans-serif; transition: all 0.1s;
+    }
+    .tile-0 { background: #cdc1b4; }
+    .tile-2 { background: #eee4da; color: #776e65; }
+    .tile-4 { background: #ede0c8; color: #776e65; }
+    .tile-8 { background: #f2b179; color: #f9f6f2; }
+    .tile-16 { background: #f59563; color: #f9f6f2; }
+    .tile-32 { background: #f67c5f; color: #f9f6f2; }
+    .tile-64 { background: #f65e3b; color: #f9f6f2; }
+    .tile-128 { background: #edcf72; color: #f9f6f2; font-size: 20px; }
+    .tile-256 { background: #edcc61; color: #f9f6f2; font-size: 20px; }
+    .tile-512 { background: #edc850; color: #f9f6f2; font-size: 20px; }
+    .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 16px; }
+    .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 16px; }
+    .tile-super { background: #3c3a32; color: #f9f6f2; font-size: 14px; }
+    #game2048Controls { display: flex; gap: 8px; }
+    #game2048Controls button {
+      padding: 3px 14px; font-size: 11px; background: #217346; color: #fff;
+      border: 1px solid #165a32; cursor: pointer;
+    }
+
+    /* ===== 지뢰찾기 모드 ===== */
+    #mineMode { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; background: #fff; gap: 8px; }
+    #mineInfo { font-size: 11px; color: #444; display: flex; gap: 20px; align-items: center; }
+    #mineBoard { display: inline-block; border: 2px solid #999; user-select: none; }
+    #mineBoard table { border-collapse: collapse; }
+    #mineBoard td {
+      width: 26px; height: 26px; text-align: center; vertical-align: middle;
+      font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid #ccc;
+      background: #d0d0d0;
+    }
+    #mineBoard td.revealed { background: #f0f0f0; cursor: default; }
+    #mineBoard td.mine-exploded { background: #ff4444; }
+    #mineBoard td.flagged { background: #d0d0d0; }
+    .mine-1 { color: #0000ff; } .mine-2 { color: #008000; } .mine-3 { color: #ff0000; }
+    .mine-4 { color: #000080; } .mine-5 { color: #800000; } .mine-6 { color: #008080; }
+    .mine-7 { color: #000; } .mine-8 { color: #808080; }
+    #mineControls { display: flex; gap: 8px; }
+    #mineControls button {
+      padding: 3px 14px; font-size: 11px; background: #217346; color: #fff;
+      border: 1px solid #165a32; cursor: pointer;
+    }
+
+    /* ===== 타자 레이싱 ===== */
+    #typeMode { flex:1; display:none; flex-direction:column; align-items:center; justify-content:center; background:#fff; gap:12px; padding:20px; }
+    #typeTarget {
+      font-size:18px; color:#333; background:#f9f9f9; border:2px solid #ddd; padding:16px 24px;
+      border-radius:4px; max-width:600px; text-align:center; line-height:1.8; letter-spacing:0.5px;
+      min-height:70px; display:flex; align-items:center; justify-content:center;
+    }
+    #typeTarget .correct { color:#217346; }
+    #typeTarget .wrong { color:#e74c3c; background:#ffe0e0; }
+    #typeTarget .pending { color:#999; }
+    #typeInput {
+      width:500px; padding:10px 16px; font-size:16px; border:2px solid #ccc; border-radius:4px;
+      outline:none; font-family:'Malgun Gothic',sans-serif;
+    }
+    #typeInput:focus { border-color:#217346; }
+    #typeInfo { font-size:12px; color:#666; display:flex; gap:20px; }
+    #typeOpProgress { font-size:11px; color:#888; }
+
+    /* ===== 반응속도 배틀 ===== */
+    #reactMode { flex:1; display:none; flex-direction:column; align-items:center; justify-content:center; background:#fff; gap:12px; }
+    #reactBox {
+      width:400px; height:300px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+      font-size:28px; font-weight:700; cursor:pointer; user-select:none; transition:background 0.15s;
+    }
+    .react-wait { background:#e74c3c; color:#fff; }
+    .react-go { background:#27ae60; color:#fff; }
+    .react-early { background:#f39c12; color:#fff; }
+    .react-result { background:#3498db; color:#fff; }
+    #reactInfo { font-size:12px; color:#666; display:flex; gap:20px; }
+    #reactScores { font-size:13px; color:#333; }
+
+    /* ===== 그림 퀴즈 ===== */
+    #drawMode { flex:1; display:none; flex-direction:column; align-items:center; background:#fff; gap:0; }
+    .draw-player { display:inline-block; padding:4px 12px; margin:3px; border-radius:4px; font-size:12px; border:1px solid #ddd; }
+    .draw-player.ready { background:#e8f5e9; border-color:#217346; color:#217346; font-weight:600; }
+    .draw-player.not-ready { background:#fff3e0; border-color:#f39c12; color:#f39c12; }
+    .draw-player.me { text-decoration:underline; }
+    #drawCanvas {
+      border:2px solid #ccc; border-radius:4px; cursor:crosshair; background:#fff;
+    }
+    #drawTools { display:flex; gap:6px; align-items:center; }
+    #drawTools button, #drawTools select {
+      padding:3px 10px; font-size:11px; background:#217346; color:#fff;
+      border:1px solid #165a32; cursor:pointer;
+    }
+    #drawTools select { background:#fff; color:#333; }
+    .color-btn { width:22px; height:22px; border-radius:50%; border:2px solid #ccc; cursor:pointer; padding:0; }
+    .color-btn.active { border-color:#000; box-shadow:0 0 0 2px #217346; }
+    #drawGuesses { width:500px; max-height:100px; overflow-y:auto; font-size:11px; border:1px solid #ddd; padding:4px; border-radius:4px; }
+    #drawGuessInput { width:400px; padding:6px 10px; font-size:13px; border:2px solid #ccc; border-radius:4px; outline:none; }
+    #drawInfo { font-size:12px; color:#666; display:flex; gap:16px; align-items:center; }
+    #drawWord { font-size:16px; font-weight:700; color:#217346; background:#e8f5e9; padding:4px 16px; border-radius:4px; }
+    #drawHint { font-size:14px; color:#999; letter-spacing:4px; }
+
+    /* ===== 색깔 찾기 ===== */
+    #colorMode { flex:1; display:none; flex-direction:column; align-items:center; justify-content:center; background:#fff; gap:12px; }
+    #colorGrid { display:inline-grid; gap:3px; }
+    .color-cell {
+      border-radius:4px; cursor:pointer; transition:transform 0.1s;
+    }
+    .color-cell:hover { transform:scale(1.05); }
+    #colorInfo { font-size:12px; color:#666; display:flex; gap:20px; }
+
+    /* 모바일 모드 메뉴 (단축키 대체) */
+    #mobileMenuBtn {
+      display: none; position: fixed; bottom: 60px; right: 12px; z-index: 400;
+      width: 44px; height: 44px; border-radius: 50%; background: #217346; color: #fff;
+      border: none; font-size: 20px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      align-items: center; justify-content: center;
+    }
+    #mobileMenu {
+      display: none; position: fixed; bottom: 110px; right: 12px; z-index: 400;
+      background: #fff; border: 1px solid #c0c0c0; border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2); overflow: hidden; min-width: 180px;
+    }
+    #mobileMenu.show { display: block; }
+    #mobileMenu button {
+      display: block; width: 100%; padding: 12px 16px; font-size: 13px;
+      border: none; background: #fff; text-align: left; cursor: pointer;
+      border-bottom: 1px solid #f0f0f0; color: #333; font-family: 'Malgun Gothic', sans-serif;
+    }
+    #mobileMenu button:last-child { border-bottom: none; }
+    #mobileMenu button:hover, #mobileMenu button:active { background: #e8f0fe; }
+    #mobileMenu button.active-mode { background: #e8f5e9; color: #217346; font-weight: 600; }
+
+    /* 단축키 매뉴얼 */
+    #manualOverlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); z-index: 500; justify-content: center; align-items: center;
+    }
+    #manualOverlay.show { display: flex; }
+    #manualBox {
+      background: #fff; border: 1px solid #999; box-shadow: 4px 4px 16px rgba(0,0,0,0.3);
+      padding: 0; width: 420px; max-height: 80vh; overflow-y: auto;
+    }
+    #manualBox .manual-title {
+      background: #217346; color: #fff; padding: 10px 16px; font-size: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    #manualBox .manual-title button {
+      background: transparent; border: none; color: #fff; font-size: 16px; cursor: pointer;
+    }
+    #manualBox .manual-body { padding: 16px; }
+    #manualBox table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    #manualBox th { text-align: left; padding: 8px 6px 4px; color: #217346; font-size: 12px; border-bottom: 2px solid #217346; }
+    #manualBox td { padding: 5px 6px; border-bottom: 1px solid #e8e8e8; }
+    #manualBox td:first-child { font-family: 'Courier New', monospace; font-weight: 600; white-space: nowrap; width: 130px; }
+    #manualBox .section-gap td { padding-top: 12px; }
+
+    /* 모드 인디케이터 */
+    #modeIndicator {
+      display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.75); color: #fff; padding: 12px 28px; border-radius: 8px;
+      font-size: 14px; z-index: 999; pointer-events: none;
+    }
+
+    /* 하단 바 */
+    #bottomBar {
+      display: flex; align-items: center; border-top: 1px solid #c0c0c0;
+      background: #f0f0f0; flex-shrink: 0; width: 100%; overflow: hidden;
+    }
+    #sheetTabs { display: flex; overflow: hidden; flex-shrink: 1; min-width: 0; }
+    #sheetTabs span {
+      padding: 5px 16px; font-size: 11px; color: #555; border-right: 1px solid #c0c0c0;
+      cursor: default; background: #e8e8e8; user-select: none;
+    }
+    #sheetTabs span.active { background: #fff; font-weight: 600; color: #217346; }
+    #inputArea { flex: 1; display: flex; align-items: center; padding: 3px 8px; gap: 4px; min-width: 0; overflow: hidden; }
+    #inputArea input {
+      flex: 1; padding: 3px 6px; font-size: 11px; border: 1px solid #c0c0c0;
+      outline: none; font-family: Calibri, 'Malgun Gothic', sans-serif;
+    }
+    #inputArea input:focus { border-color: #217346; }
+    #inputArea button {
+      padding: 3px 12px; font-size: 11px; background: #217346; color: #fff;
+      border: 1px solid #165a32; cursor: pointer;
+    }
+    #statusBar {
+      display: flex; justify-content: space-between; padding: 3px 12px;
+      background: #217346; color: rgba(255,255,255,0.8); font-size: 10px; flex-shrink: 0; width: 100%;
+    }
+    #chatWrap { display: none; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; z-index: 10; }
+
+    /* ===== 모바일 반응형 ===== */
+    @media (max-width: 768px) {
+      /* 모바일 메뉴 버튼 표시 */
+      #mobileMenuBtn { display: flex; }
+
+      /* 로그인 */
+      #login { width: 85vw; padding: 20px; }
+      #login input { width: 100%; }
+      #login button { margin-left: 6px; padding: 6px 16px; }
+      #login div { flex-wrap: nowrap; }
+
+      /* 리본 간소화 */
+      .title-bar { font-size: 10px; padding: 3px 8px; }
+      .tabs { padding: 0 4px; }
+      .tabs span { padding: 3px 8px; font-size: 10px; }
+      .toolbar { padding: 3px 6px; gap: 4px; font-size: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .toolbar select { font-size: 10px; max-width: 70px; }
+
+      /* 수식 바 */
+      #formulaBar .cell-ref { width: 50px; font-size: 10px; padding: 3px; }
+      #formulaBar .fx { padding: 3px 4px; font-size: 10px; }
+      #formulaBar input { font-size: 11px; padding: 3px 6px; }
+
+      /* 채팅 모드 */
+      #colHeader .col { font-size: 10px; padding: 2px 0; }
+      #colHeader .rh { width: 24px; }
+      #colHeader .col-a { width: 24px; }
+      #colHeader .col-d { width: 40px; }
+      .row .row-num { width: 24px; font-size: 9px; }
+      .row .cell { font-size: 11px; padding: 4px 4px; }
+      .row .cell-a { width: 24px; }
+      .row .cell-d { width: 40px; font-size: 9px; }
+
+      /* 하단 입력 영역 */
+      #bottomBar { flex-wrap: wrap; }
+      #sheetTabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-shrink: 0; max-width: 100%; }
+      #sheetTabs span { padding: 5px 10px; font-size: 10px; white-space: nowrap; }
+      #inputArea { flex: 1 1 100%; min-width: 0; padding: 4px 6px; }
+      #inputArea input { font-size: 13px; padding: 6px 8px; }
+      #inputArea button { padding: 6px 14px; font-size: 12px; }
+      #statusBar { font-size: 9px; padding: 3px 8px; }
+
+      /* 매뉴얼 팝업 */
+      #manualBox { width: 92vw; max-height: 85vh; }
+      #manualBox td:first-child { width: 100px; font-size: 10px; }
+      #manualBox td { font-size: 10px; }
+
+      /* 오목 */
+      #gomokuBoard th { width: 22px; height: 18px; font-size: 8px; }
+      #gomokuBoard td { width: 22px; height: 22px; }
+      #gomokuBoard td .stone { width: 18px; height: 18px; }
+
+      /* 2048 */
+      #game2048Board {
+        grid-template-columns: repeat(4, 60px); grid-template-rows: repeat(4, 60px);
+        gap: 3px; padding: 3px;
+      }
+      .tile-2048 { width: 60px; height: 60px; font-size: 18px; }
+      .tile-128, .tile-256, .tile-512 { font-size: 16px; }
+      .tile-1024, .tile-2048 { font-size: 13px; }
+      #opponent2048Board { transform: scale(0.5); }
+
+      /* 지뢰찾기 */
+      #mineBoard td { width: 28px; height: 28px; font-size: 13px; }
+      #mineInfo { flex-wrap: wrap; gap: 8px; font-size: 10px; }
+
+      /* 타자 레이싱 */
+      #typeTarget { font-size: 14px; padding: 12px 16px; max-width: 90vw; }
+      #typeInput { width: 90vw; font-size: 14px; }
+
+      /* 반응속도 */
+      #reactBox { width: 85vw; height: 220px; font-size: 22px; }
+
+      /* 그림 퀴즈 */
+      #drawCanvas { width: 90vw; height: 240px; }
+      #drawGuesses { width: 90vw; }
+      #drawGuessInput { width: 90vw; font-size: 13px; }
+      #drawTools { flex-wrap: wrap; justify-content: center; }
+
+      /* 색깔 찾기 */
+      .color-cell { min-width: 36px; min-height: 36px; }
+
+      /* 엑셀 모드 */
+      #excelGrid td { width: 70px; min-width: 70px; font-size: 10px; }
+      #excelGrid th { font-size: 10px; }
+      #excelGrid .row-header { width: 30px; min-width: 30px; }
+
+      /* 모드 인디케이터 */
+      #modeIndicator { font-size: 12px; padding: 10px 20px; }
+    }
+
+    @media (max-width: 400px) {
+      #game2048Board {
+        grid-template-columns: repeat(4, 50px); grid-template-rows: repeat(4, 50px);
+      }
+      .tile-2048 { width: 50px; height: 50px; font-size: 16px; }
+      .tile-128, .tile-256, .tile-512 { font-size: 14px; }
+      .tile-1024, .tile-2048 { font-size: 11px; }
+      #gomokuBoard th { width: 18px; height: 16px; font-size: 7px; }
+      #gomokuBoard td { width: 18px; height: 18px; }
+      #gomokuBoard td .stone { width: 14px; height: 14px; }
+      #reactBox { height: 180px; font-size: 18px; }
+      #drawCanvas { height: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="login">
+    <h1>사용자 이름을 입력하세요:</h1>
+    <div style="display:flex;">
+      <input type="text" id="nickname" placeholder="이름" maxlength="12" autofocus>
+      <button onclick="join()">확인</button>
+    </div>
+  </div>
+
+  <div id="chatWrap">
+    <div id="ribbon">
+      <div class="title-bar">통합 매출현황_2026Q1_v3_최종.xlsx - Excel</div>
+      <div class="tabs">
+        <span>파일</span><span class="active">홈</span><span>삽입</span><span>페이지 레이아웃</span><span>수식</span><span>데이터</span><span>검토</span><span>보기</span>
+      </div>
+      <div class="toolbar">
+        <select style="width:100px;"><option>맑은 고딕</option><option>Calibri</option><option>Arial</option></select>
+        <select style="width:45px;"><option>11</option><option>9</option><option>10</option><option>12</option><option>14</option></select>
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-btn bold">B</span>
+        <span class="toolbar-btn italic">I</span>
+        <span class="toolbar-btn underline">U</span>
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-btn" title="왼쪽 맞춤">≡</span>
+        <span class="toolbar-btn" title="가운데 맞춤">≡</span>
+        <span class="toolbar-btn" title="오른쪽 맞춤">≡</span>
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-btn" title="테두리">⊞</span>
+        <span class="toolbar-btn" title="채우기 색">🎨</span>
+        <span style="margin-left:auto; color: #888;" id="userCount">접속: 0</span>
+      </div>
+    </div>
+
+    <div id="formulaBar">
+      <div class="cell-ref" id="cellRef">A1</div>
+      <div class="fx">fx</div>
+      <input type="text" id="formulaInput" spellcheck="false">
+    </div>
+
+    <div id="sheet">
+      <!-- 채팅 모드 -->
+      <div id="chatMode">
+        <div id="colHeader">
+          <div class="rh"></div>
+          <div class="col col-a">A</div>
+          <div class="col col-b">B</div>
+          <div class="col col-c">C</div>
+          <div class="col col-d">D</div>
+        </div>
+        <div id="messages"></div>
+      </div>
+      <!-- 엑셀 모드 -->
+      <div id="excelMode">
+        <div id="excelGrid"></div>
+      </div>
+      <!-- 2048 모드 -->
+      <div id="game2048Mode">
+        <div id="game2048Info">
+          <span>내 점수: <b id="score2048">0</b></span>
+          <span>|</span>
+          <span>상대: <b id="opponent2048Name">-</b> <b id="opponent2048Score">0</b>점</span>
+        </div>
+        <div style="display:flex; gap:24px; align-items:flex-start;">
+          <div>
+            <div style="font-size:10px;color:#888;text-align:center;margin-bottom:4px;">나</div>
+            <div id="game2048Board"></div>
+          </div>
+          <div id="opponent2048Wrap" style="display:none;">
+            <div style="font-size:10px;color:#888;text-align:center;margin-bottom:4px;" id="opponent2048Label">상대</div>
+            <div id="opponent2048Board" style="transform:scale(0.65);transform-origin:top left;"></div>
+          </div>
+        </div>
+        <div id="game2048Controls">
+          <button onclick="reset2048()">새 게임 (N)</button>
+        </div>
+      </div>
+      <!-- 지뢰찾기 모드 -->
+      <div id="mineMode">
+        <div id="mineInfo">
+          <span>지뢰: <b id="mineRemain">10</b></span>
+          <span id="mineTimer">시간: 0초</span>
+          <span id="mineTurnInfo" style="font-weight:600;color:#217346;">내 턴</span>
+          <span>나: <b id="mineMyScore">0</b>점</span>
+          <span>상대: <b id="mineOpScore">0</b>점</span>
+          <span id="mineStatus"></span>
+        </div>
+        <div id="mineBoard"></div>
+        <div id="mineControls">
+          <button onclick="mineReset2P()">새 게임 (N)</button>
+          <select id="mineDifficulty" onchange="mineReset2P()">
+            <option value="easy">초급 (9x9, 10)</option>
+            <option value="medium">중급 (16x16, 40)</option>
+            <option value="hard">고급 (16x30, 99)</option>
+          </select>
+        </div>
+      </div>
+      <!-- 타자 레이싱 -->
+      <div id="typeMode">
+        <div id="typeInfo">
+          <span id="typeRound">라운드: 1/5</span>
+          <span>나: <b id="typeMyWin">0</b>승</span>
+          <span>상대: <b id="typeOpWin">0</b>승</span>
+        </div>
+        <div id="typeTarget">시작 버튼을 누르세요</div>
+        <input type="text" id="typeInput" placeholder="위 문장을 그대로 입력하세요..." disabled spellcheck="false">
+        <div id="typeOpProgress"></div>
+        <button onclick="typeStart()" style="padding:4px 20px;font-size:12px;background:#217346;color:#fff;border:1px solid #165a32;cursor:pointer;">새 게임 시작</button>
+      </div>
+      <!-- 반응속도 배틀 -->
+      <div id="reactMode">
+        <div id="reactInfo">
+          <span id="reactRound">라운드: 0/5</span>
+          <span id="reactScores">나 0 : 0 상대</span>
+        </div>
+        <div id="reactBox" class="react-wait" onclick="reactClick()">클릭해서 시작</div>
+        <div id="reactLog" style="font-size:11px;color:#888;max-height:80px;overflow-y:auto;text-align:center;"></div>
+      </div>
+      <!-- 그림 퀴즈 -->
+      <div id="drawMode">
+        <!-- 로비 -->
+        <div id="drawLobby" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;">
+          <div style="font-size:14px;font-weight:700;color:#217346;">캐치마인드 (2~5인)</div>
+          <div id="drawPlayerList" style="font-size:12px;color:#333;text-align:center;min-height:80px;"></div>
+          <div id="drawCountdown" style="font-size:48px;font-weight:700;color:#e74c3c;display:none;"></div>
+          <button id="drawReadyBtn" onclick="drawToggleReady()" style="padding:8px 32px;font-size:14px;background:#217346;color:#fff;border:1px solid #165a32;cursor:pointer;border-radius:4px;">Ready</button>
+          <div style="font-size:10px;color:#999;">최소 2명, 전원 Ready 시 5초 카운트다운 후 시작</div>
+        </div>
+        <!-- 게임 -->
+        <div id="drawGame" style="display:none;flex-direction:column;align-items:center;flex:1;gap:8px;padding:12px;">
+          <div id="drawInfo">
+            <span id="drawRole">대기</span>
+            <span id="drawWord" style="display:none;"></span>
+            <span id="drawHint"></span>
+            <span id="drawScoreBoard"></span>
+          </div>
+          <canvas id="drawCanvas" width="500" height="320"></canvas>
+          <div id="drawTools">
+            <button class="color-btn active" style="background:#000;" onclick="drawSetColor('#000',this)"></button>
+            <button class="color-btn" style="background:#e74c3c;" onclick="drawSetColor('#e74c3c',this)"></button>
+            <button class="color-btn" style="background:#3498db;" onclick="drawSetColor('#3498db',this)"></button>
+            <button class="color-btn" style="background:#27ae60;" onclick="drawSetColor('#27ae60',this)"></button>
+            <button class="color-btn" style="background:#f39c12;" onclick="drawSetColor('#f39c12',this)"></button>
+            <select id="drawSize" onchange="drawCtx.lineWidth=this.value">
+              <option value="3">가늘게</option>
+              <option value="6" selected>보통</option>
+              <option value="12">굵게</option>
+            </select>
+            <button onclick="drawClear(true)">지우기</button>
+            <button onclick="drawNewRound()" id="drawNewBtn" style="display:none;">새 문제</button>
+          </div>
+          <input type="text" id="drawGuessInput" placeholder="정답을 입력하세요..." spellcheck="false">
+          <div id="drawGuesses"></div>
+        </div>
+      </div>
+      <!-- 색깔 찾기 -->
+      <div id="colorMode">
+        <div id="colorInfo">
+          <span>레벨: <b id="colorLevel">1</b></span>
+          <span>나: <b id="colorMyScore">0</b> | 상대: <b id="colorOpScore">0</b></span>
+          <span id="colorResult"></span>
+        </div>
+        <div id="colorGrid"></div>
+        <button onclick="colorNewRound(true)" style="padding:4px 20px;font-size:12px;background:#217346;color:#fff;border:1px solid #165a32;cursor:pointer;margin-top:8px;">새 게임</button>
+      </div>
+      <!-- 오목 모드 -->
+      <div id="gomokuMode">
+        <div id="gomokuInfo">
+          <span id="gomokuTurn">대기 중...</span>
+          <span id="gomokuScore">흑 0 : 0 백</span>
+        </div>
+        <div id="gomokuBoard"></div>
+        <div id="gomokuControls">
+          <button onclick="gomokuReset()">새 게임</button>
+          <button onclick="gomokuUndo()">무르기</button>
+        </div>
+        <div id="gomokuWinOverlay"></div>
+      </div>
+    </div>
+
+    <div id="bottomBar">
+      <div id="sheetTabs">
+        <span class="active" id="tabChat">Sheet1</span>
+        <span id="tabSheet2" style="display:none;">Sheet2</span>
+        <span id="tabGomoku" style="display:none;">Sheet3</span>
+        <span id="tab2048" style="display:none;">Sheet4</span>
+        <span id="tabMine" style="display:none;">Sheet5</span>
+        <span id="tabType" style="display:none;">Sheet6</span>
+        <span id="tabReact" style="display:none;">Sheet7</span>
+        <span id="tabDraw" style="display:none;">Sheet8</span>
+        <span id="tabColor" style="display:none;">Sheet9</span>
+      </div>
+      <div id="inputArea">
+        <input type="text" id="msgInput" placeholder="셀 내용을 입력하세요..." autofocus>
+        <button onclick="sendMsg()">입력</button>
+      </div>
+    </div>
+
+    <div id="statusBar">
+      <span id="statusLeft">준비</span>
+      <span id="statusRight">합계: ₩128,450,000</span>
+    </div>
+  </div>
+
+  <div id="manualOverlay" onclick="if(event.target===this)toggleManual()">
+    <div id="manualBox">
+      <div class="manual-title">
+        <span>단축키 매뉴얼 — 통합 매출현황.xlsx</span>
+        <button onclick="toggleManual()">&times;</button>
+      </div>
+      <div class="manual-body">
+        <table>
+          <tr><th colspan="2">모드 전환 (Mac: Ctrl / Win: Ctrl)</th></tr>
+          <tr><td>Esc</td><td>채팅 모드로 복귀</td></tr>
+          <tr><td>Ctrl + M</td><td>이 매뉴얼 열기/닫기</td></tr>
+          <tr><td>Ctrl + K</td><td>Excel 모드 (스프레드시트)</td></tr>
+          <tr><td>Ctrl + E</td><td>오목 모드 (1:1 대전)</td></tr>
+          <tr><td>Ctrl + G</td><td>2048 모드 (2인 대전)</td></tr>
+          <tr><td>Ctrl + ;</td><td>지뢰찾기 모드 (2인 턴제)</td></tr>
+          <tr><td>Ctrl + ,</td><td>타자 레이싱 (2인 대전)</td></tr>
+          <tr><td>Ctrl + .</td><td>반응속도 배틀 (2인 대전)</td></tr>
+          <tr><td>Ctrl + /</td><td>그림 퀴즈 (그리기+맞추기)</td></tr>
+          <tr><td>Ctrl + '</td><td>색깔 다른거 찾기 (2인)</td></tr>
+          <tr class="section-gap"><th colspan="2">채팅 모드</th></tr>
+          <tr><td>Enter</td><td>메시지 전송</td></tr>
+          <tr><td>E2E 암호화</td><td>자동 (ECDH + AES-256-GCM)</td></tr>
+          <tr class="section-gap"><th colspan="2">Excel 모드</th></tr>
+          <tr><td>방향키</td><td>셀 이동</td></tr>
+          <tr><td>Enter / Tab</td><td>아래 / 오른쪽 이동</td></tr>
+          <tr><td>F2</td><td>셀 편집</td></tr>
+          <tr><td>Delete</td><td>셀 내용 삭제</td></tr>
+          <tr><td>바로 타이핑</td><td>셀 편집 시작</td></tr>
+          <tr><td>수식</td><td>SUM, AVERAGE, COUNT, MAX, MIN</td></tr>
+          <tr class="section-gap"><th colspan="2">오목 모드</th></tr>
+          <tr><td>클릭</td><td>돌 놓기</td></tr>
+          <tr><td>새 게임</td><td>보드 초기화</td></tr>
+          <tr><td>무르기</td><td>2수 되돌리기</td></tr>
+          <tr class="section-gap"><th colspan="2">2048 모드 (2인 대전)</th></tr>
+          <tr><td>방향키</td><td>타일 이동</td></tr>
+          <tr><td>N</td><td>새 게임</td></tr>
+          <tr><td>상대 보드</td><td>실시간 점수 표시</td></tr>
+          <tr class="section-gap"><th colspan="2">지뢰찾기 (2인 턴제)</th></tr>
+          <tr><td>클릭</td><td>셀 열기 (내 턴)</td></tr>
+          <tr><td>우클릭</td><td>깃발 꽂기/해제</td></tr>
+          <tr><td>N</td><td>새 게임</td></tr>
+          <tr class="section-gap"><th colspan="2">타자 레이싱</th></tr>
+          <tr><td>타이핑</td><td>문장 따라치기 대결</td></tr>
+          <tr class="section-gap"><th colspan="2">반응속도 배틀</th></tr>
+          <tr><td>클릭</td><td>초록색 되면 빠르게 클릭</td></tr>
+          <tr class="section-gap"><th colspan="2">그림 퀴즈</th></tr>
+          <tr><td>마우스 드래그</td><td>그리기</td></tr>
+          <tr><td>Enter</td><td>정답 제출</td></tr>
+          <tr class="section-gap"><th colspan="2">색깔 찾기</th></tr>
+          <tr><td>클릭</td><td>다른 색 찾기</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모바일 모드 전환 메뉴 -->
+  <button id="mobileMenuBtn" onclick="toggleMobileMenu()">≡</button>
+  <div id="mobileMenu">
+    <button onclick="mobileSwitch('chat')">💬 채팅</button>
+    <button onclick="mobileSwitch('excel')">📊 Excel</button>
+    <button onclick="mobileSwitch('gomoku')">⚫ 오목</button>
+    <button onclick="mobileSwitch('2048')">🔢 2048</button>
+    <button onclick="mobileSwitch('mine')">💣 지뢰찾기</button>
+    <button onclick="mobileSwitch('type')">⌨️ 타자 레이싱</button>
+    <button onclick="mobileSwitch('react')">⚡ 반응속도</button>
+    <button onclick="mobileSwitch('draw')">🎨 그림 퀴즈</button>
+    <button onclick="mobileSwitch('color')">🎯 색깔 찾기</button>
+    <button onclick="toggleManual()" style="border-top:2px solid #e0e0e0;">📖 단축키 매뉴얼</button>
+  </div>
+
+  <div id="modeIndicator"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // ========== E2E 암호화 (ECDH P-521 + AES-256-GCM + HKDF-SHA512) ==========
+    const subtle = window.crypto && window.crypto.subtle ? window.crypto.subtle : null;
+    let e2eAvailable = !!subtle;
+    let myKeyPair = null;
+    const peerKeys = new Map();
+    const sharedKeys = new Map();
+
+    async function initCrypto() {
+      if (!subtle) {
+        console.warn('[E2E] crypto.subtle 사용 불가 (HTTPS가 아닌 환경). 암호화 비활성화.');
+        e2eAvailable = false;
+        return;
+      }
+      try {
+        myKeyPair = await subtle.generateKey(
+          { name: 'ECDH', namedCurve: 'P-521' },
+          true, ['deriveKey', 'deriveBits']
+        );
+        e2eAvailable = true;
+        console.log('[E2E] ECDH P-521 키쌍 생성 완료');
+      } catch (e) {
+        console.error('[E2E] 키 생성 실패:', e);
+        e2eAvailable = false;
+      }
+    }
+
+    async function exportPublicKey() {
+      return await subtle.exportKey('jwk', myKeyPair.publicKey);
+    }
+
+    async function importPeerKey(jwk) {
+      return await subtle.importKey(
+        'jwk', jwk,
+        { name: 'ECDH', namedCurve: 'P-521' },
+        false, []
+      );
+    }
+
+    async function deriveAESKey(peerPublicKey) {
+      const sharedBits = await subtle.deriveBits(
+        { name: 'ECDH', public: peerPublicKey },
+        myKeyPair.privateKey,
+        256
+      );
+      const hkdfKey = await subtle.importKey('raw', sharedBits, 'HKDF', false, ['deriveKey']);
+      const salt = new TextEncoder().encode('chat-app-e2e-v1-salt');
+      const info = new TextEncoder().encode('chat-app-e2e-aes256gcm');
+
+      return await subtle.deriveKey(
+        { name: 'HKDF', hash: 'SHA-512', salt, info },
+        hkdfKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    }
+
+    async function encryptMessage(plaintext) {
+      if (!e2eAvailable || sharedKeys.size === 0) return { _plain: plaintext };
+
+      const iv = window.crypto.getRandomValues(new Uint8Array(12));
+      const encoded = new TextEncoder().encode(plaintext);
+      const results = {};
+
+      for (const [peerId, aesKey] of sharedKeys.entries()) {
+        const ciphertext = await subtle.encrypt(
+          { name: 'AES-GCM', iv, tagLength: 128 },
+          aesKey,
+          encoded
+        );
+        results[peerId] = {
+          iv: btoa(String.fromCharCode(...iv)),
+          data: btoa(String.fromCharCode(...new Uint8Array(ciphertext)))
+        };
+      }
+      return results;
+    }
+
+    async function decryptMessage(peerId, encrypted) {
+      const aesKey = sharedKeys.get(peerId);
+      if (!aesKey) return '[암호화 키 없음]';
+
+      try {
+        const iv = Uint8Array.from(atob(encrypted.iv), c => c.charCodeAt(0));
+        const data = Uint8Array.from(atob(encrypted.data), c => c.charCodeAt(0));
+
+        const decrypted = await subtle.decrypt(
+          { name: 'AES-GCM', iv, tagLength: 128 },
+          aesKey,
+          data
+        );
+        return new TextDecoder().decode(decrypted);
+      } catch (e) {
+        console.error('[E2E] 복호화 실패:', e);
+        return '[복호화 실패]';
+      }
+    }
+
+    // ========== 채팅 ==========
+    const socket = io();
+    let myNick = '';
+    let chatRowNum = 0;
+    let isExcelMode = false;
+    let isGomokuMode = false;
+    let is2048Mode = false;
+    let isMineMode = false;
+    let isTypeMode = false;
+    let isReactMode = false;
+    let isDrawMode = false;
+    let isColorMode = false;
+    let isManualOpen = false;
+    let cryptoReady = false;
+
+    const $ = (id) => document.getElementById(id);
+    const $login = $('login');
+    const $chatWrap = $('chatWrap');
+    const $messages = $('messages');
+    const $msgInput = $('msgInput');
+    const $userCount = $('userCount');
+    const $nickname = $('nickname');
+    const $cellRef = $('cellRef');
+    const $formulaInput = $('formulaInput');
+    const $chatMode = $('chatMode');
+    const $excelMode = $('excelMode');
+    const $excelGrid = $('excelGrid');
+    const $modeIndicator = $('modeIndicator');
+    const $inputArea = $('inputArea');
+    const $statusLeft = $('statusLeft');
+    const $statusRight = $('statusRight');
+
+    // 초기화: 키 생성
+    initCrypto().then(() => { cryptoReady = true; console.log('[E2E] 암호화 준비 완료'); });
+
+    $nickname.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) join(); });
+    $msgInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) sendMsg(); });
+
+    async function join() {
+      const nick = $nickname.value.trim();
+      if (!nick) return;
+      myNick = nick;
+      socket.emit('join', myNick);
+
+      // E2E 가능하면 공개키 배포
+      if (e2eAvailable && myKeyPair) {
+        const pubJwk = await exportPublicKey();
+        socket.emit('publicKey', pubJwk);
+        socket.emit('requestKeys');
+      }
+
+      $login.style.display = 'none';
+      $chatWrap.style.display = 'flex';
+      $msgInput.focus();
+      $chatWrap.scrollLeft = 0;
+    }
+
+    // 피어 공개키 수신 → 공유 AES 키 파생
+    socket.on('publicKey', async ({ id, jwk }) => {
+      try {
+        const peerPub = await importPeerKey(jwk);
+        peerKeys.set(id, peerPub);
+        const aesKey = await deriveAESKey(peerPub);
+        sharedKeys.set(id, aesKey);
+        console.log(`[E2E] ${id}와 AES-256-GCM 키 교환 완료`);
+      } catch (e) {
+        console.error('[E2E] 키 교환 실패:', e);
+      }
+    });
+
+    socket.on('peerDisconnected', (id) => {
+      peerKeys.delete(id);
+      sharedKeys.delete(id);
+    });
+
+    async function sendMsg() {
+      if (isExcelMode || isGomokuMode || is2048Mode || isMineMode) return;
+      const msg = $msgInput.value.trim();
+      if (!msg) return;
+
+      // 암호화하여 전송
+      const encrypted = await encryptMessage(msg);
+      socket.emit('chat', encrypted);
+
+      appendMsg({ nickname: myNick, msg, time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) }, true);
+      $msgInput.value = '';
+    }
+
+    function appendMsg(data, isMine) {
+      chatRowNum++;
+      const div = document.createElement('div');
+      div.className = `row ${isMine ? 'mine' : 'other'}`;
+      div.innerHTML = `<div class="row-num">${chatRowNum}</div><div class="cell cell-a">${chatRowNum}</div><div class="cell cell-b">${esc(data.nickname)}</div><div class="cell cell-c">${esc(data.msg)}</div><div class="cell cell-d">${data.time}</div>`;
+      $messages.appendChild(div);
+      $messages.scrollTop = $messages.scrollHeight;
+    }
+
+    // 암호화된 메시지 수신 → 복호화
+    socket.on('chat', async (data) => {
+      let msg = '';
+      const encrypted = data.encrypted;
+
+      if (encrypted && encrypted._plain) {
+        // 암호화 불가 환경에서 보낸 평문
+        msg = encrypted._plain;
+      } else if (encrypted && encrypted[socket.id]) {
+        // E2E 암호화 메시지 복호화
+        for (const [peerId] of sharedKeys.entries()) {
+          try {
+            msg = await decryptMessage(peerId, encrypted[socket.id]);
+            if (msg && msg !== '[복호화 실패]') break;
+          } catch (e) { continue; }
+        }
+        if (!msg) msg = '[복호화 실패]';
+      } else {
+        msg = '[암호화된 메시지 - 키 교환 필요]';
+      }
+
+      appendMsg({ nickname: data.nickname, msg, time: data.time }, false);
+    });
+
+    socket.on('system', (text) => {
+      chatRowNum++;
+      const div = document.createElement('div');
+      div.className = 'row system';
+      div.innerHTML = `<div class="row-num">${chatRowNum}</div><div class="cell cell-a">${chatRowNum}</div><div class="cell cell-b">-</div><div class="cell cell-c">${esc(text)}</div><div class="cell cell-d"></div>`;
+      $messages.appendChild(div);
+      $messages.scrollTop = $messages.scrollHeight;
+    });
+    let currentUserCount = 0;
+    socket.on('userCount', (count) => { currentUserCount = count; $userCount.textContent = `접속: ${count}`; });
+
+    function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+    // ========== 엑셀 모드 ==========
+    const ROWS = 50;
+    const COLS = 20;
+    const colLetters = [];
+    for (let i = 0; i < COLS; i++) {
+      if (i < 26) colLetters.push(String.fromCharCode(65 + i));
+      else colLetters.push('A' + String.fromCharCode(65 + i - 26));
+    }
+
+    // 셀 데이터 저장소
+    const cellData = {};       // raw 입력값 (수식 포함)
+    const cellDisplay = {};    // 표시값
+
+    // 초기 더미 데이터
+    const dummyData = {
+      'A1': '구분', 'B1': '1월', 'C1': '2월', 'D1': '3월', 'E1': '합계',
+      'A2': '온라인', 'B2': '42500000', 'C2': '38900000', 'D2': '45200000', 'E2': '=SUM(B2:D2)',
+      'A3': '오프라인', 'B3': '31200000', 'C3': '28700000', 'D3': '33400000', 'E3': '=SUM(B3:D3)',
+      'A4': '도매', 'B4': '18300000', 'C4': '21500000', 'D4': '19800000', 'E4': '=SUM(B4:D4)',
+      'A5': '합계', 'B5': '=SUM(B2:B4)', 'C5': '=SUM(C2:C4)', 'D5': '=SUM(D2:D4)', 'E5': '=SUM(E2:E4)',
+      'A7': '평균', 'B7': '=AVERAGE(B2:B4)', 'C7': '=AVERAGE(C2:C4)', 'D7': '=AVERAGE(D2:D4)',
+      'A8': '최대', 'B8': '=MAX(B2:B4)', 'C8': '=MAX(C2:C4)', 'D8': '=MAX(D2:D4)',
+      'A9': '최소', 'B9': '=MIN(B2:B4)', 'C9': '=MIN(C2:C4)', 'D9': '=MIN(D2:D4)',
+      'A10': '건수', 'B10': '=COUNT(B2:B4)', 'C10': '=COUNT(C2:C4)', 'D10': '=COUNT(D2:D4)',
+    };
+
+    let selectedCell = null;
+    let editingCell = null;
+
+    function cellId(r, c) { return colLetters[c] + (r + 1); }
+
+    function parseCellRef(ref) {
+      const m = ref.match(/^([A-Z]+)(\d+)$/);
+      if (!m) return null;
+      let col = 0;
+      for (let i = 0; i < m[1].length; i++) col = col * 26 + (m[1].charCodeAt(i) - 64);
+      return { r: parseInt(m[2]) - 1, c: col - 1 };
+    }
+
+    function parseRange(range) {
+      const parts = range.split(':');
+      if (parts.length !== 2) return [];
+      const s = parseCellRef(parts[0].trim());
+      const e = parseCellRef(parts[1].trim());
+      if (!s || !e) return [];
+      const cells = [];
+      for (let r = s.r; r <= e.r; r++) {
+        for (let c = s.c; c <= e.c; c++) {
+          cells.push(cellId(r, c));
+        }
+      }
+      return cells;
+    }
+
+    function getCellValue(id) {
+      const raw = cellData[id];
+      if (raw === undefined || raw === '') return 0;
+      if (typeof raw === 'string' && raw.startsWith('=')) return evaluateFormula(raw);
+      const n = Number(raw);
+      return isNaN(n) ? raw : n;
+    }
+
+    function evaluateFormula(formula) {
+      try {
+        const upper = formula.toUpperCase().substring(1).trim();
+
+        // SUM, AVERAGE, COUNT, MAX, MIN
+        const fnMatch = upper.match(/^(SUM|AVERAGE|COUNT|MAX|MIN)\((.+)\)$/);
+        if (fnMatch) {
+          const fn = fnMatch[1];
+          const args = fnMatch[2];
+          let values = [];
+
+          // 여러 인자 지원: SUM(A1:A3, B1)
+          const parts = args.split(',');
+          for (const part of parts) {
+            const trimmed = part.trim();
+            if (trimmed.includes(':')) {
+              const refs = parseRange(trimmed);
+              for (const ref of refs) {
+                const v = getCellValue(ref);
+                if (typeof v === 'number') values.push(v);
+              }
+            } else {
+              const v = getCellValue(trimmed);
+              if (typeof v === 'number') values.push(v);
+            }
+          }
+
+          if (values.length === 0) return 0;
+          switch (fn) {
+            case 'SUM': return values.reduce((a, b) => a + b, 0);
+            case 'AVERAGE': return values.reduce((a, b) => a + b, 0) / values.length;
+            case 'COUNT': return values.length;
+            case 'MAX': return Math.max(...values);
+            case 'MIN': return Math.min(...values);
+          }
+        }
+
+        // 단순 셀 참조: =A1+B1 같은 수식
+        let expr = upper;
+        expr = expr.replace(/[A-Z]+\d+/g, (ref) => {
+          const v = getCellValue(ref);
+          return typeof v === 'number' ? v : 0;
+        });
+        // 안전한 수식 평가 (숫자, 연산자, 괄호만 허용)
+        if (/^[\d\s+\-*/().]+$/.test(expr)) {
+          return Function('"use strict"; return (' + expr + ')')();
+        }
+        return '#ERROR';
+      } catch (e) {
+        return '#ERROR';
+      }
+    }
+
+    function formatNumber(val) {
+      if (typeof val === 'number') {
+        if (Number.isInteger(val) && Math.abs(val) >= 1000) {
+          return val.toLocaleString('ko-KR');
+        }
+        if (!Number.isInteger(val)) {
+          return val.toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+        }
+        return val.toLocaleString('ko-KR');
+      }
+      return val;
+    }
+
+    function renderGrid() {
+      let html = '<table><thead><tr><th class="row-header"></th>';
+      for (let c = 0; c < COLS; c++) {
+        html += `<th style="width:90px;min-width:90px;">${colLetters[c]}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+
+      for (let r = 0; r < ROWS; r++) {
+        html += `<tr><th class="row-header">${r + 1}</th>`;
+        for (let c = 0; c < COLS; c++) {
+          const id = cellId(r, c);
+          const raw = cellData[id] || '';
+          let display = '';
+          let cls = '';
+
+          if (raw && typeof raw === 'string' && raw.startsWith('=')) {
+            const result = evaluateFormula(raw);
+            display = formatNumber(result);
+            cellDisplay[id] = result;
+            if (typeof result === 'number') cls = 'number';
+          } else if (raw !== '') {
+            display = esc(raw);
+            cellDisplay[id] = raw;
+            if (!isNaN(Number(raw)) && raw !== '') {
+              cls = 'number';
+              display = formatNumber(Number(raw));
+            }
+          }
+
+          html += `<td data-id="${id}" data-r="${r}" data-c="${c}" class="${cls}">${display}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      $excelGrid.innerHTML = html;
+
+      // 이벤트 바인딩
+      $excelGrid.querySelectorAll('td').forEach(td => {
+        td.addEventListener('click', (e) => selectCell(td));
+        td.addEventListener('dblclick', (e) => startEdit(td));
+      });
+    }
+
+    function selectCell(td) {
+      if (editingCell) finishEdit();
+      if (selectedCell) selectedCell.classList.remove('selected');
+      selectedCell = td;
+      td.classList.add('selected');
+      const id = td.dataset.id;
+      $cellRef.textContent = id;
+      $formulaInput.value = cellData[id] || '';
+    }
+
+    function startEdit(td) {
+      if (editingCell) finishEdit();
+      editingCell = td;
+      td.classList.add('editing');
+      const id = td.dataset.id;
+      const raw = cellData[id] || '';
+      td.innerHTML = `<input type="text" value="${raw.replace(/"/g, '&quot;')}" spellcheck="false">`;
+      const input = td.querySelector('input');
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.isComposing) {
+          finishEdit();
+          // 아래로 이동
+          moveSelection(1, 0);
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          finishEdit();
+          moveSelection(0, e.shiftKey ? -1 : 1);
+        } else if (e.key === 'Escape') {
+          cancelEdit();
+        }
+      });
+
+      input.addEventListener('input', () => {
+        $formulaInput.value = input.value;
+      });
+
+      input.addEventListener('blur', () => {
+        // 약간 딜레이로 다른 셀 클릭 시 처리
+        setTimeout(() => { if (editingCell === td) finishEdit(); }, 100);
+      });
+    }
+
+    function finishEdit() {
+      if (!editingCell) return;
+      const td = editingCell;
+      const input = td.querySelector('input');
+      if (input) {
+        const id = td.dataset.id;
+        const val = input.value;
+        if (val === '') {
+          delete cellData[id];
+          delete cellDisplay[id];
+        } else {
+          cellData[id] = val;
+        }
+      }
+      editingCell = null;
+      td.classList.remove('editing');
+      refreshAllCells();
+    }
+
+    function cancelEdit() {
+      if (!editingCell) return;
+      const td = editingCell;
+      editingCell = null;
+      td.classList.remove('editing');
+      refreshCell(td);
+    }
+
+    function refreshAllCells() {
+      $excelGrid.querySelectorAll('td').forEach(td => refreshCell(td));
+      updateStatus();
+    }
+
+    function refreshCell(td) {
+      const id = td.dataset.id;
+      const raw = cellData[id] || '';
+      let display = '';
+      td.className = '';
+
+      if (td === selectedCell) td.classList.add('selected');
+
+      if (raw && typeof raw === 'string' && raw.startsWith('=')) {
+        const result = evaluateFormula(raw);
+        display = formatNumber(result);
+        cellDisplay[id] = result;
+        if (typeof result === 'number') td.classList.add('number');
+      } else if (raw !== '') {
+        cellDisplay[id] = raw;
+        if (!isNaN(Number(raw)) && raw !== '') {
+          td.classList.add('number');
+          display = formatNumber(Number(raw));
+        } else {
+          display = esc(raw);
+        }
+      } else {
+        delete cellDisplay[id];
+      }
+
+      td.innerHTML = display;
+    }
+
+    function moveSelection(dr, dc) {
+      if (!selectedCell) return;
+      const r = parseInt(selectedCell.dataset.r) + dr;
+      const c = parseInt(selectedCell.dataset.c) + dc;
+      if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+      const nextId = cellId(r, c);
+      const nextTd = $excelGrid.querySelector(`td[data-id="${nextId}"]`);
+      if (nextTd) selectCell(nextTd);
+    }
+
+    function updateStatus() {
+      if (!selectedCell) return;
+      // 선택된 셀 주변의 숫자들로 상태바 업데이트
+      const id = selectedCell.dataset.id;
+      const val = getCellValue(id);
+      if (typeof val === 'number' && val !== 0) {
+        $statusRight.textContent = `값: ${formatNumber(val)}`;
+      } else {
+        $statusRight.textContent = '합계: ₩128,450,000';
+      }
+    }
+
+    // 수식입력줄에서 Enter
+    $formulaInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.isComposing && isExcelMode && selectedCell) {
+        const id = selectedCell.dataset.id;
+        const val = $formulaInput.value;
+        if (val === '') {
+          delete cellData[id];
+        } else {
+          cellData[id] = val;
+        }
+        refreshAllCells();
+        moveSelection(1, 0);
+      }
+    });
+
+    // ========== 오목 ==========
+    const GOMOKU_SIZE = 15;
+    let gomokuBoard = [];
+    let gomokuTurnBlack = true;   // true=흑, false=백
+    let gomokuMyColor = null;     // 'black' or 'white'
+    let gomokuGameOver = false;
+    let gomokuHistory = [];
+    let gomokuScoreBlack = 0;
+    let gomokuScoreWhite = 0;
+
+    const $gomokuMode = $('gomokuMode');
+    const $gomokuBoard = $('gomokuBoard');
+    const $gomokuTurn = $('gomokuTurn');
+    const $gomokuScore = $('gomokuScore');
+    const $gomokuWinOverlay = $('gomokuWinOverlay');
+
+    function gomokuInit() {
+      gomokuBoard = Array.from({ length: GOMOKU_SIZE }, () => Array(GOMOKU_SIZE).fill(0));
+      gomokuTurnBlack = true;
+      gomokuGameOver = false;
+      gomokuHistory = [];
+      gomokuMyColor = null;
+      $gomokuWinOverlay.style.display = 'none';
+      gomokuRenderBoard();
+      gomokuUpdateInfo();
+    }
+
+    function gomokuRenderBoard() {
+      let html = '<table><thead><tr><th></th>';
+      for (let c = 0; c < GOMOKU_SIZE; c++) html += `<th>${c + 1}</th>`;
+      html += '</tr></thead><tbody>';
+      for (let r = 0; r < GOMOKU_SIZE; r++) {
+        html += `<tr><th>${String.fromCharCode(65 + r)}</th>`;
+        for (let c = 0; c < GOMOKU_SIZE; c++) {
+          const v = gomokuBoard[r][c];
+          let content = '';
+          if (v === 1) content = '<span class="stone black"></span>';
+          else if (v === 2) content = '<span class="stone white"></span>';
+          html += `<td data-r="${r}" data-c="${c}">${content}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      $gomokuBoard.innerHTML = html;
+
+      // 마지막 수 표시
+      if (gomokuHistory.length > 0) {
+        const last = gomokuHistory[gomokuHistory.length - 1];
+        const lastTd = $gomokuBoard.querySelector(`td[data-r="${last.r}"][data-c="${last.c}"] .stone`);
+        if (lastTd) lastTd.classList.add('last');
+      }
+
+      // 승리 셀 하이라이트
+      if (gomokuGameOver && gomokuHistory.length > 0) {
+        const last = gomokuHistory[gomokuHistory.length - 1];
+        const winCells = gomokuGetWinCells(last.r, last.c, gomokuBoard[last.r][last.c]);
+        for (const [wr, wc] of winCells) {
+          const td = $gomokuBoard.querySelector(`td[data-r="${wr}"][data-c="${wc}"]`);
+          if (td) td.classList.add('win-cell');
+        }
+      }
+
+      // 클릭 이벤트
+      $gomokuBoard.querySelectorAll('td').forEach(td => {
+        td.addEventListener('click', () => {
+          const r = parseInt(td.dataset.r);
+          const c = parseInt(td.dataset.c);
+          gomokuPlace(r, c, true);
+        });
+      });
+    }
+
+    function gomokuPlace(r, c, isLocal) {
+      if (gomokuGameOver) return;
+      if (gomokuBoard[r][c] !== 0) return;
+
+      // 첫 수를 둔 사람이 흑
+      if (isLocal && gomokuMyColor === null) {
+        gomokuMyColor = gomokuTurnBlack ? 'black' : 'white';
+      }
+
+      // 내 턴인지 확인 (로컬에서 둘 때만)
+      if (isLocal) {
+        const myTurn = (gomokuMyColor === 'black' && gomokuTurnBlack) || (gomokuMyColor === 'white' && !gomokuTurnBlack);
+        if (!myTurn && gomokuMyColor !== null) return;
+      }
+
+      const color = gomokuTurnBlack ? 1 : 2;
+      gomokuBoard[r][c] = color;
+      gomokuHistory.push({ r, c, color });
+      gomokuTurnBlack = !gomokuTurnBlack;
+
+      // 네트워크 전송
+      if (isLocal) {
+        socket.emit('gomoku:place', { r, c, color });
+      }
+
+      // 승리 체크
+      if (gomokuCheckWin(r, c, color)) {
+        gomokuGameOver = true;
+        const winner = color === 1 ? '흑' : '백';
+        if (color === 1) gomokuScoreBlack++; else gomokuScoreWhite++;
+        $gomokuWinOverlay.textContent = `${winner} 승리!`;
+        $gomokuWinOverlay.style.display = 'block';
+        setTimeout(() => { $gomokuWinOverlay.style.display = 'none'; }, 3000);
+      }
+
+      gomokuRenderBoard();
+      gomokuUpdateInfo();
+    }
+
+    function gomokuCheckWin(r, c, color) {
+      const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+      for (const [dr, dc] of dirs) {
+        let count = 1;
+        for (let i = 1; i < 5; i++) {
+          const nr = r + dr * i, nc = c + dc * i;
+          if (nr < 0 || nr >= GOMOKU_SIZE || nc < 0 || nc >= GOMOKU_SIZE || gomokuBoard[nr][nc] !== color) break;
+          count++;
+        }
+        for (let i = 1; i < 5; i++) {
+          const nr = r - dr * i, nc = c - dc * i;
+          if (nr < 0 || nr >= GOMOKU_SIZE || nc < 0 || nc >= GOMOKU_SIZE || gomokuBoard[nr][nc] !== color) break;
+          count++;
+        }
+        if (count >= 5) return true;
+      }
+      return false;
+    }
+
+    function gomokuGetWinCells(r, c, color) {
+      const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+      for (const [dr, dc] of dirs) {
+        const cells = [[r, c]];
+        for (let i = 1; i < 5; i++) {
+          const nr = r + dr * i, nc = c + dc * i;
+          if (nr < 0 || nr >= GOMOKU_SIZE || nc < 0 || nc >= GOMOKU_SIZE || gomokuBoard[nr][nc] !== color) break;
+          cells.push([nr, nc]);
+        }
+        for (let i = 1; i < 5; i++) {
+          const nr = r - dr * i, nc = c - dc * i;
+          if (nr < 0 || nr >= GOMOKU_SIZE || nc < 0 || nc >= GOMOKU_SIZE || gomokuBoard[nr][nc] !== color) break;
+          cells.push([nr, nc]);
+        }
+        if (cells.length >= 5) return cells;
+      }
+      return [];
+    }
+
+    function gomokuUpdateInfo() {
+      if (gomokuGameOver) {
+        $gomokuTurn.innerHTML = '게임 종료';
+      } else {
+        const turnStr = gomokuTurnBlack ? '흑' : '백';
+        const stoneClass = gomokuTurnBlack ? 'stone-black' : 'stone-white';
+        const isMyTurn = gomokuMyColor === null ||
+          (gomokuMyColor === 'black' && gomokuTurnBlack) ||
+          (gomokuMyColor === 'white' && !gomokuTurnBlack);
+        $gomokuTurn.innerHTML = `<span class="stone-preview ${stoneClass}"></span>${turnStr} 차례${isMyTurn ? ' (내 턴)' : ' (상대 턴)'}`;
+      }
+      $gomokuScore.textContent = `흑 ${gomokuScoreBlack} : ${gomokuScoreWhite} 백`;
+      $statusRight.textContent = `흑 ${gomokuScoreBlack} : ${gomokuScoreWhite} 백`;
+    }
+
+    function gomokuReset() {
+      socket.emit('gomoku:reset');
+      gomokuInit();
+    }
+
+    function gomokuUndo() {
+      if (gomokuHistory.length === 0 || gomokuGameOver) return;
+      // 내 마지막 수를 되돌리기 (2수 되돌림 - 상대+나)
+      if (gomokuHistory.length >= 2) {
+        const last2 = gomokuHistory.pop();
+        const last1 = gomokuHistory.pop();
+        gomokuBoard[last2.r][last2.c] = 0;
+        gomokuBoard[last1.r][last1.c] = 0;
+        gomokuTurnBlack = last1.color === 1;
+        socket.emit('gomoku:place', { r: last2.r, c: last2.c, color: 0, undo: true });
+        socket.emit('gomoku:place', { r: last1.r, c: last1.c, color: 0, undo: true });
+      } else if (gomokuHistory.length === 1) {
+        const last = gomokuHistory.pop();
+        gomokuBoard[last.r][last.c] = 0;
+        gomokuTurnBlack = last.color === 1;
+        socket.emit('gomoku:place', { r: last.r, c: last.c, color: 0, undo: true });
+      }
+      gomokuRenderBoard();
+      gomokuUpdateInfo();
+    }
+
+    // 네트워크 수신
+    socket.on('gomoku:place', (data) => {
+      if (data.undo) {
+        gomokuBoard[data.r][data.c] = 0;
+        gomokuHistory = gomokuHistory.filter(h => !(h.r === data.r && h.c === data.c));
+        // 턴 복원
+        let blackCount = 0, whiteCount = 0;
+        for (const h of gomokuHistory) { if (h.color === 1) blackCount++; else whiteCount++; }
+        gomokuTurnBlack = blackCount <= whiteCount;
+        gomokuRenderBoard();
+        gomokuUpdateInfo();
+        return;
+      }
+      if (gomokuMyColor === null) {
+        gomokuMyColor = data.color === 1 ? 'white' : 'black';
+      }
+      gomokuPlace(data.r, data.c, false);
+    });
+
+    socket.on('gomoku:reset', () => {
+      gomokuInit();
+    });
+
+    // 초기화
+    gomokuInit();
+
+    // ========== 매뉴얼 ==========
+    function toggleManual() {
+      isManualOpen = !isManualOpen;
+      $('manualOverlay').classList.toggle('show', isManualOpen);
+    }
+
+    // ========== 2048 (2인 대전) ==========
+    let board2048 = [];
+    let score2048 = 0;
+    let game2048Over = false;
+    let opponent2048Score = 0;
+    let opponent2048Board = [];
+
+    function init2048() {
+      board2048 = Array.from({ length: 4 }, () => Array(4).fill(0));
+      score2048 = 0;
+      game2048Over = false;
+      add2048Tile();
+      add2048Tile();
+      render2048();
+      sync2048();
+    }
+
+    function reset2048() {
+      init2048();
+      socket.emit('2048:reset');
+    }
+
+    function add2048Tile() {
+      const empty = [];
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) if (board2048[r][c] === 0) empty.push([r, c]);
+      if (empty.length === 0) return;
+      const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+      board2048[r][c] = Math.random() < 0.9 ? 2 : 4;
+    }
+
+    function render2048Board(board, targetId) {
+      const $board = $(targetId);
+      $board.innerHTML = '';
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          const v = board[r][c];
+          const cls = v <= 2048 ? `tile-${v}` : 'tile-super';
+          const div = document.createElement('div');
+          div.className = `tile-2048 ${cls}`;
+          div.textContent = v || '';
+          $board.appendChild(div);
+        }
+      }
+    }
+
+    function render2048() {
+      render2048Board(board2048, 'game2048Board');
+      $('score2048').textContent = score2048;
+      $('opponent2048Score').textContent = opponent2048Score;
+      $statusRight.textContent = `나: ${score2048} | 상대: ${opponent2048Score}`;
+    }
+
+    function sync2048() {
+      socket.emit('2048:update', { board: board2048, score: score2048, gameOver: game2048Over });
+    }
+
+    function slide2048(row) {
+      let arr = row.filter(v => v !== 0);
+      const result = [];
+      let i = 0;
+      while (i < arr.length) {
+        if (i + 1 < arr.length && arr[i] === arr[i + 1]) {
+          const merged = arr[i] * 2;
+          result.push(merged);
+          score2048 += merged;
+          i += 2;
+        } else {
+          result.push(arr[i]);
+          i++;
+        }
+      }
+      while (result.length < 4) result.push(0);
+      return result;
+    }
+
+    function move2048(dir) {
+      if (game2048Over) return;
+      const prev = JSON.stringify(board2048);
+      if (dir === 'left') {
+        for (let r = 0; r < 4; r++) board2048[r] = slide2048(board2048[r]);
+      } else if (dir === 'right') {
+        for (let r = 0; r < 4; r++) board2048[r] = slide2048(board2048[r].slice().reverse()).reverse();
+      } else if (dir === 'up') {
+        for (let c = 0; c < 4; c++) {
+          const col = [board2048[0][c], board2048[1][c], board2048[2][c], board2048[3][c]];
+          const slid = slide2048(col);
+          for (let r = 0; r < 4; r++) board2048[r][c] = slid[r];
+        }
+      } else if (dir === 'down') {
+        for (let c = 0; c < 4; c++) {
+          const col = [board2048[3][c], board2048[2][c], board2048[1][c], board2048[0][c]];
+          const slid = slide2048(col);
+          for (let r = 0; r < 4; r++) board2048[3 - r][c] = slid[r];
+        }
+      }
+      if (JSON.stringify(board2048) !== prev) {
+        add2048Tile();
+        render2048();
+        sync2048();
+        if (check2048GameOver()) {
+          game2048Over = true;
+          sync2048();
+          $statusRight.textContent = `게임 오버! 나: ${score2048} | 상대: ${opponent2048Score}`;
+        }
+      }
+    }
+
+    function check2048GameOver() {
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
+        if (board2048[r][c] === 0) return false;
+        if (c < 3 && board2048[r][c] === board2048[r][c + 1]) return false;
+        if (r < 3 && board2048[r][c] === board2048[r + 1][c]) return false;
+      }
+      return true;
+    }
+
+    // 상대 2048 수신
+    socket.on('2048:update', (data) => {
+      opponent2048Score = data.score;
+      opponent2048Board = data.board;
+      $('opponent2048Name').textContent = data.nickname;
+      $('opponent2048Label').textContent = data.nickname;
+      $('opponent2048Score').textContent = data.score;
+      $('opponent2048Wrap').style.display = 'block';
+      render2048Board(data.board, 'opponent2048Board');
+      if (is2048Mode) $statusRight.textContent = `나: ${score2048} | ${data.nickname}: ${data.score}`;
+    });
+
+    socket.on('2048:reset', () => {
+      opponent2048Score = 0;
+      init2048();
+    });
+
+    init2048();
+
+    // ========== 지뢰찾기 (2인 턴제) ==========
+    const MINE_CONFIGS = { easy: { rows: 9, cols: 9, mines: 10 }, medium: { rows: 16, cols: 16, mines: 40 }, hard: { rows: 16, cols: 30, mines: 99 } };
+    let mineBoard = [], mineRevealed = [], mineFlags = [], mineRows, mineCols, mineMines;
+    let mineGameOver = false, mineFirstClick = true;
+    let mineTimerInterval = null, mineTime = 0;
+    let mineMyTurn = true, mineMyScore = 0, mineOpScore = 0;
+    let mineIsHost = false;
+
+    function mineInit(boardData) {
+      const diff = $('mineDifficulty').value;
+      const cfg = MINE_CONFIGS[diff];
+      mineRows = cfg.rows; mineCols = cfg.cols; mineMines = cfg.mines;
+
+      if (boardData) {
+        // 상대가 보낸 보드 사용
+        mineBoard = boardData;
+        mineFirstClick = false;
+        mineIsHost = false;
+      } else {
+        mineBoard = Array.from({ length: mineRows }, () => Array(mineCols).fill(0));
+        mineFirstClick = true;
+        mineIsHost = true;
+      }
+      mineRevealed = Array.from({ length: mineRows }, () => Array(mineCols).fill(false));
+      mineFlags = Array.from({ length: mineRows }, () => Array(mineCols).fill(false));
+      mineGameOver = false;
+      mineMyTurn = true; mineMyScore = 0; mineOpScore = 0;
+      mineTime = 0;
+      if (mineTimerInterval) clearInterval(mineTimerInterval);
+      mineTimerInterval = null;
+      mineRender();
+    }
+
+    function mineReset2P() {
+      mineInit();
+      socket.emit('mine:reset');
+    }
+
+    function minePlaceMines(excludeR, excludeC) {
+      let placed = 0;
+      while (placed < mineMines) {
+        const r = Math.floor(Math.random() * mineRows);
+        const c = Math.floor(Math.random() * mineCols);
+        if (mineBoard[r][c] === -1) continue;
+        if (Math.abs(r - excludeR) <= 1 && Math.abs(c - excludeC) <= 1) continue;
+        mineBoard[r][c] = -1;
+        placed++;
+      }
+      for (let r = 0; r < mineRows; r++) for (let c = 0; c < mineCols; c++) {
+        if (mineBoard[r][c] === -1) continue;
+        let count = 0;
+        for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < mineRows && nc >= 0 && nc < mineCols && mineBoard[nr][nc] === -1) count++;
+        }
+        mineBoard[r][c] = count;
+      }
+    }
+
+    function mineReveal(r, c) {
+      if (r < 0 || r >= mineRows || c < 0 || c >= mineCols) return;
+      if (mineRevealed[r][c] || mineFlags[r][c]) return;
+      mineRevealed[r][c] = true;
+      if (mineBoard[r][c] === 0) {
+        for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          mineReveal(r + dr, c + dc);
+        }
+      }
+    }
+
+    function mineCheckWin() {
+      for (let r = 0; r < mineRows; r++) for (let c = 0; c < mineCols; c++) {
+        if (mineBoard[r][c] !== -1 && !mineRevealed[r][c]) return false;
+      }
+      return true;
+    }
+
+    function mineCountRevealed() {
+      let count = 0;
+      for (let r = 0; r < mineRows; r++) for (let c = 0; c < mineCols; c++) {
+        if (mineRevealed[r][c] && mineBoard[r][c] !== -1) count++;
+      }
+      return count;
+    }
+
+    function mineDoReveal(r, c, isLocal) {
+      if (mineGameOver) return;
+      if (mineRevealed[r][c] || mineFlags[r][c]) return;
+
+      const prevRevealed = mineCountRevealed();
+
+      if (mineBoard[r][c] === -1) {
+        mineRevealed[r][c] = true;
+        mineGameOver = true;
+        for (let rr = 0; rr < mineRows; rr++) for (let cc = 0; cc < mineCols; cc++) {
+          if (mineBoard[rr][cc] === -1) mineRevealed[rr][cc] = true;
+        }
+        clearInterval(mineTimerInterval);
+        const loser = isLocal ? '나' : '상대';
+        $('mineStatus').textContent = `${loser} 지뢰 밟음! ${isLocal ? '상대' : '내'} 승리!`;
+        mineRender();
+        return;
+      }
+
+      mineReveal(r, c);
+      const newRevealed = mineCountRevealed();
+      const points = newRevealed - prevRevealed;
+
+      if (isLocal) mineMyScore += points; else mineOpScore += points;
+
+      if (mineCheckWin()) {
+        mineGameOver = true;
+        clearInterval(mineTimerInterval);
+        const winner = mineMyScore > mineOpScore ? '내' : (mineMyScore < mineOpScore ? '상대' : '무승부');
+        $('mineStatus').textContent = `클리어! ${winner === '무승부' ? '무승부!' : winner + ' 승리!'}  (나 ${mineMyScore} : ${mineOpScore} 상대)`;
+      } else {
+        // 턴 교대
+        mineMyTurn = !mineMyTurn;
+      }
+      mineRender();
+    }
+
+    function mineRender() {
+      let flagCount = 0;
+      for (let r = 0; r < mineRows; r++) for (let c = 0; c < mineCols; c++) if (mineFlags[r][c]) flagCount++;
+      $('mineRemain').textContent = mineMines - flagCount;
+      $('mineTimer').textContent = `시간: ${mineTime}초`;
+      $('mineMyScore').textContent = mineMyScore;
+      $('mineOpScore').textContent = mineOpScore;
+      $('mineTurnInfo').textContent = mineGameOver ? '' : (mineMyTurn ? '내 턴' : '상대 턴');
+      $('mineTurnInfo').style.color = mineMyTurn ? '#217346' : '#cc4444';
+
+      let html = '<table>';
+      for (let r = 0; r < mineRows; r++) {
+        html += '<tr>';
+        for (let c = 0; c < mineCols; c++) {
+          if (mineRevealed[r][c]) {
+            const v = mineBoard[r][c];
+            if (v === -1) {
+              html += `<td class="revealed mine-exploded" data-r="${r}" data-c="${c}">*</td>`;
+            } else {
+              html += `<td class="revealed mine-${v}" data-r="${r}" data-c="${c}">${v || ''}</td>`;
+            }
+          } else if (mineFlags[r][c]) {
+            html += `<td class="flagged" data-r="${r}" data-c="${c}">F</td>`;
+          } else {
+            html += `<td data-r="${r}" data-c="${c}"></td>`;
+          }
+        }
+        html += '</tr>';
+      }
+      html += '</table>';
+      $('mineBoard').innerHTML = html;
+
+      $('mineBoard').querySelectorAll('td').forEach(td => {
+        td.addEventListener('click', () => {
+          if (mineGameOver || !mineMyTurn) return;
+          const r = parseInt(td.dataset.r), c = parseInt(td.dataset.c);
+          if (mineFlags[r][c]) return;
+          if (mineFirstClick) {
+            mineFirstClick = false;
+            minePlaceMines(r, c);
+            // 보드를 상대에게 공유
+            socket.emit('mine:init', { board: mineBoard, diff: $('mineDifficulty').value });
+            mineTimerInterval = setInterval(() => { mineTime++; $('mineTimer').textContent = `시간: ${mineTime}초`; }, 1000);
+          }
+          mineDoReveal(r, c, true);
+          socket.emit('mine:reveal', { r, c });
+        });
+        td.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          if (mineGameOver) return;
+          const r = parseInt(td.dataset.r), c = parseInt(td.dataset.c);
+          if (mineRevealed[r][c]) return;
+          mineFlags[r][c] = !mineFlags[r][c];
+          socket.emit('mine:flag', { r, c, flagged: mineFlags[r][c] });
+          mineRender();
+        });
+      });
+
+      if (isMineMode) $statusRight.textContent = `나: ${mineMyScore} | 상대: ${mineOpScore}`;
+    }
+
+    // 지뢰찾기 네트워크 수신
+    socket.on('mine:init', (data) => {
+      $('mineDifficulty').value = data.diff;
+      mineInit(data.board);
+      mineMyTurn = false; // 호스트가 먼저
+      if (!mineTimerInterval) {
+        mineTimerInterval = setInterval(() => { mineTime++; $('mineTimer').textContent = `시간: ${mineTime}초`; }, 1000);
+      }
+      mineRender();
+    });
+
+    socket.on('mine:reveal', (data) => {
+      mineDoReveal(data.r, data.c, false);
+    });
+
+    socket.on('mine:flag', (data) => {
+      if (data.r < mineRows && data.c < mineCols) {
+        mineFlags[data.r][data.c] = data.flagged;
+        mineRender();
+      }
+    });
+
+    socket.on('mine:reset', () => {
+      mineInit();
+    });
+
+    mineInit();
+
+    // ========== 모드 전환 헬퍼 ==========
+    function closeAllModes() {
+      if (isDrawMode) socket.emit('draw:leave');
+      isExcelMode = false; isGomokuMode = false; is2048Mode = false;
+      isMineMode = false; isTypeMode = false; isReactMode = false;
+      isDrawMode = false; isColorMode = false;
+    }
+
+    const allTabIds = ['tabChat','tabSheet2','tabGomoku','tab2048','tabMine','tabType','tabReact','tabDraw','tabColor'];
+
+    function setAllModesHidden() {
+      $chatMode.style.display = 'none';
+      $excelMode.style.display = 'none';
+      $gomokuMode.style.display = 'none';
+      $('game2048Mode').style.display = 'none';
+      $('mineMode').style.display = 'none';
+      $('typeMode').style.display = 'none';
+      $('reactMode').style.display = 'none';
+      $('drawMode').style.display = 'none';
+      $('colorMode').style.display = 'none';
+      $inputArea.style.display = 'none';
+      allTabIds.forEach(t => { $(t).classList.remove('active'); $(t).style.display = 'none'; });
+    }
+
+    function showTab(tabId) {
+      $(tabId).style.display = '';
+      $(tabId).classList.add('active');
+    }
+
+    // ========== 모드 토글 단축키 ==========
+    document.addEventListener('keydown', (e) => {
+      const mod = e.ctrlKey || e.metaKey;
+
+      // 매뉴얼: Ctrl+M
+      if (mod && e.key === 'm') {
+        e.preventDefault();
+        toggleManual();
+        return;
+      }
+      if (isManualOpen) {
+        if (e.key === 'Escape') toggleManual();
+        return;
+      }
+
+      // Esc: 채팅모드로 복귀
+      if (e.key === 'Escape') {
+        if (isExcelMode || isGomokuMode || is2048Mode || isMineMode || isTypeMode || isReactMode || isDrawMode || isColorMode) {
+          e.preventDefault();
+          closeAllModes();
+          showChatMode();
+          showIndicator('💬 채팅 모드');
+          return;
+        }
+      }
+
+      // Excel: Ctrl+K (Cmd+K도 지원)
+      if (mod && e.key === 'k') {
+        e.preventDefault();
+        closeAllModes(); toggleExcel();
+        return;
+      }
+      // 오목: Ctrl+E
+      if (mod && e.key === 'e') {
+        e.preventDefault();
+        closeAllModes(); toggleGomoku();
+        return;
+      }
+      // 2048: Ctrl+G
+      if (mod && e.key === 'g') {
+        e.preventDefault();
+        closeAllModes(); toggle2048();
+        return;
+      }
+      // 지뢰찾기: Ctrl+;
+      if (mod && e.key === ';') {
+        e.preventDefault();
+        closeAllModes(); toggleMine();
+        return;
+      }
+
+      // 타자 레이싱: Ctrl+,
+      if (mod && e.key === ',') {
+        e.preventDefault();
+        closeAllModes(); toggleType();
+        return;
+      }
+      // 반응속도: Ctrl+.
+      if (mod && e.key === '.') {
+        e.preventDefault();
+        closeAllModes(); toggleReact();
+        return;
+      }
+      // 그림 퀴즈: Ctrl+/
+      if (mod && e.key === '/') {
+        e.preventDefault();
+        closeAllModes(); toggleDraw();
+        return;
+      }
+      // 색깔 찾기: Ctrl+'
+      if (mod && e.key === "'") {
+        e.preventDefault();
+        closeAllModes(); toggleColor();
+        return;
+      }
+
+      // 2048 방향키
+      if (is2048Mode) {
+        const map2048 = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+        if (map2048[e.key] && !game2048Over) { e.preventDefault(); move2048(map2048[e.key]); return; }
+        if (e.key === 'n' || e.key === 'N') { reset2048(); return; }
+      }
+
+      // 지뢰찾기 새게임
+      if (isMineMode && (e.key === 'n' || e.key === 'N')) { mineReset2P(); return; }
+
+      // 엑셀모드 키보드 네비게이션
+      if (isExcelMode && !editingCell && selectedCell) {
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+          e.preventDefault();
+          const map = { ArrowUp: [-1,0], ArrowDown: [1,0], ArrowLeft: [0,-1], ArrowRight: [0,1] };
+          moveSelection(...map[e.key]);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          moveSelection(1, 0);
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          moveSelection(0, e.shiftKey ? -1 : 1);
+        } else if (e.key === 'Delete' || e.key === 'Backspace') {
+          const id = selectedCell.dataset.id;
+          delete cellData[id];
+          delete cellDisplay[id];
+          $formulaInput.value = '';
+          refreshAllCells();
+        } else if (e.key === 'F2') {
+          startEdit(selectedCell);
+        } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          // 바로 타이핑 시작
+          const id = selectedCell.dataset.id;
+          cellData[id] = '';
+          startEdit(selectedCell);
+          const input = selectedCell.querySelector('input');
+          if (input) input.value = e.key;
+        }
+      }
+    });
+
+    function showChatMode() {
+      setAllModesHidden();
+      $chatMode.style.display = 'flex';
+      $inputArea.style.display = 'flex';
+      $statusLeft.textContent = '준비';
+      $statusRight.textContent = '합계: ₩128,450,000';
+      showTab('tabChat');
+      $msgInput.focus();
+      $chatWrap.scrollLeft = 0;
+    }
+
+    function toggleExcel() {
+      isExcelMode = !isExcelMode;
+      if (isExcelMode) {
+        setAllModesHidden();
+        $excelMode.style.display = 'flex';
+        $statusLeft.textContent = '편집 모드';
+        showIndicator('📊 Excel 모드');
+        showTab('tabSheet2');
+        renderGrid();
+        const first = $excelGrid.querySelector('td');
+        if (first) selectCell(first);
+      } else { showChatMode(); showIndicator('💬 채팅 모드'); }
+    }
+
+    function toggleGomoku() {
+      isGomokuMode = !isGomokuMode;
+      if (isGomokuMode) {
+        setAllModesHidden();
+        $gomokuMode.style.display = 'flex';
+        $statusLeft.textContent = '데이터 분석 중...';
+        showIndicator('⚫ 오목 모드');
+        showTab('tabGomoku');
+        gomokuRenderBoard(); gomokuUpdateInfo();
+      } else { showChatMode(); showIndicator('💬 채팅 모드'); }
+    }
+
+    function toggle2048() {
+      is2048Mode = !is2048Mode;
+      if (is2048Mode) {
+        setAllModesHidden();
+        $('game2048Mode').style.display = 'flex';
+        $statusLeft.textContent = '수식 계산 중...';
+        showIndicator('🔢 2048 모드');
+        showTab('tab2048');
+        render2048();
+      } else { showChatMode(); showIndicator('💬 채팅 모드'); }
+    }
+
+    function toggleMine() {
+      isMineMode = !isMineMode;
+      if (isMineMode) {
+        setAllModesHidden();
+        $('mineMode').style.display = 'flex';
+        $statusLeft.textContent = '데이터 검증 중...';
+        showIndicator('💣 지뢰찾기 모드');
+        showTab('tabMine');
+        mineRender();
+      } else { showChatMode(); showIndicator('💬 채팅 모드'); }
+    }
+
+    function toggleType() {
+      isTypeMode = !isTypeMode;
+      if (isTypeMode) {
+        setAllModesHidden();
+        $('typeMode').style.display = 'flex';
+        $statusLeft.textContent = '입력 대기 중...';
+        showIndicator('⌨️ 타자 레이싱');
+        showTab('tabType');
+      } else { showChatMode(); showIndicator('💬 채팅 모드'); }
+    }
+
+    function toggleReact() {
+      isReactMode = !isReactMode;
+      if (isReactMode) {
+        setAllModesHidden();
+        $('reactMode').style.display = 'flex';
+        $statusLeft.textContent = '반응 테스트...';
+        showIndicator('⚡ 반응속도 배틀');
+        showTab('tabReact');
+      } else { showChatMode(); showIndicator('💬 채팅 모드'); }
+    }
+
+    function toggleDraw() {
+      isDrawMode = !isDrawMode;
+      if (isDrawMode) {
+        setAllModesHidden();
+        $('drawMode').style.display = 'flex';
+        $statusLeft.textContent = '차트 편집 중...';
+        showIndicator('🎨 그림 퀴즈');
+        showTab('tabDraw');
+        drawShowLobby();
+        socket.emit('draw:join');
+      } else { showChatMode(); showIndicator('💬 채팅 모드'); }
+    }
+
+    function toggleColor() {
+      isColorMode = !isColorMode;
+      if (isColorMode) {
+        setAllModesHidden();
+        $('colorMode').style.display = 'flex';
+        $statusLeft.textContent = '셀 서식 비교 중...';
+        showIndicator('🎯 색깔 찾기');
+        showTab('tabColor');
+        if (colorLevel === 1 && colorMyScore === 0) colorNewRound(true);
+      } else { showChatMode(); showIndicator('💬 채팅 모드'); }
+    }
+
+    function showIndicator(text) {
+      $modeIndicator.textContent = text;
+      $modeIndicator.style.display = 'block';
+      setTimeout(() => { $modeIndicator.style.display = 'none'; }, 1200);
+    }
+
+    // ========== 모바일 메뉴 & 터치 지원 ==========
+    const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                     || (window.innerWidth <= 768);
+
+    function toggleMobileMenu() {
+      const menu = $('mobileMenu');
+      menu.classList.toggle('show');
+      if (menu.classList.contains('show')) updateMobileMenuActive();
+    }
+
+    function updateMobileMenuActive() {
+      const menu = $('mobileMenu');
+      const btns = menu.querySelectorAll('button');
+      btns.forEach(b => b.classList.remove('active-mode'));
+      let idx = 0;
+      if (!isExcelMode && !isGomokuMode && !is2048Mode && !isMineMode && !isTypeMode && !isReactMode && !isDrawMode && !isColorMode) idx = 0;
+      else if (isExcelMode) idx = 1;
+      else if (isGomokuMode) idx = 2;
+      else if (is2048Mode) idx = 3;
+      else if (isMineMode) idx = 4;
+      else if (isTypeMode) idx = 5;
+      else if (isReactMode) idx = 6;
+      else if (isDrawMode) idx = 7;
+      else if (isColorMode) idx = 8;
+      if (btns[idx]) btns[idx].classList.add('active-mode');
+    }
+
+    function mobileSwitch(mode) {
+      $('mobileMenu').classList.remove('show');
+      closeAllModes();
+      switch(mode) {
+        case 'chat': showChatMode(); showIndicator('💬 채팅 모드'); break;
+        case 'excel': toggleExcel(); break;
+        case 'gomoku': toggleGomoku(); break;
+        case '2048': toggle2048(); break;
+        case 'mine': toggleMine(); break;
+        case 'type': toggleType(); break;
+        case 'react': toggleReact(); break;
+        case 'draw': toggleDraw(); break;
+        case 'color': toggleColor(); break;
+      }
+    }
+
+    // 메뉴 바깥 클릭 시 닫기
+    document.addEventListener('click', (e) => {
+      const menu = $('mobileMenu');
+      const btn = $('mobileMenuBtn');
+      if (menu.classList.contains('show') && !menu.contains(e.target) && e.target !== btn) {
+        menu.classList.remove('show');
+      }
+    });
+
+    // 2048 터치 스와이프 지원
+    (function() {
+      let touchStartX = 0, touchStartY = 0;
+      const sheet = $('sheet');
+
+      sheet.addEventListener('touchstart', (e) => {
+        if (!is2048Mode) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      sheet.addEventListener('touchend', (e) => {
+        if (!is2048Mode || game2048Over) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        const absDx = Math.abs(dx), absDy = Math.abs(dy);
+        if (Math.max(absDx, absDy) < 30) return;
+        if (absDx > absDy) {
+          move2048(dx > 0 ? 'right' : 'left');
+        } else {
+          move2048(dy > 0 ? 'down' : 'up');
+        }
+      }, { passive: true });
+    })();
+
+    // 지뢰찾기 모바일 길게 누르기 = 우클릭 (깃발)
+    (function() {
+      let longPressTimer = null;
+      const board = $('mineBoard');
+      board.addEventListener('touchstart', (e) => {
+        if (!isMineMode) return;
+        const td = e.target.closest('td');
+        if (!td) return;
+        longPressTimer = setTimeout(() => {
+          e.preventDefault();
+          td.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }));
+          longPressTimer = null;
+        }, 500);
+      }, { passive: false });
+      board.addEventListener('touchend', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
+      board.addEventListener('touchmove', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
+    })();
+
+    // ========== 타자 레이싱 ==========
+    const typeSentences = [
+      '빠른 갈색 여우가 게으른 개를 뛰어넘었다',
+      '오늘 점심은 뭐 먹을까 고민이 된다',
+      '내일 회의 자료 준비해야 하는데 시간이 부족하다',
+      '주말에 영화 보러 가기로 했는데 비가 온다고 한다',
+      '커피 한 잔의 여유가 하루를 바꿔놓기도 한다',
+      '프로그래밍은 논리적 사고력이 중요하다',
+      '서울에서 부산까지 고속열차로 두 시간 반이 걸린다',
+      '인공지능 기술이 빠르게 발전하고 있다',
+      '건강을 위해 매일 삼십 분씩 운동하는 것이 좋다',
+      '맛있는 음식을 만들려면 좋은 재료가 필요하다',
+      '봄이 오면 벚꽃이 만개하여 거리가 아름다워진다',
+      '독서는 마음의 양식이라는 말이 있다',
+      '세계 여행은 누구나 한 번쯤 꿈꾸는 일이다',
+      '비 오는 날에는 따뜻한 국물 요리가 생각난다',
+      '매일 조금씩 노력하면 큰 변화를 만들 수 있다',
+    ];
+    let typeCurrentSentence = '';
+    let typeRound = 0, typeMyWins = 0, typeOpWins = 0;
+    let typeStartTime = 0, typeFinished = false;
+
+    function typeStart() {
+      typeRound = 0; typeMyWins = 0; typeOpWins = 0;
+      typeNextRound();
+      socket.emit('type:start', { action: 'newgame' });
+    }
+
+    function typeNextRound() {
+      typeRound++;
+      typeFinished = false;
+      const idx = Math.floor(Math.random() * typeSentences.length);
+      typeCurrentSentence = typeSentences[idx];
+      typeStartTime = Date.now();
+
+      $('typeRound').textContent = `라운드: ${typeRound}/5`;
+      $('typeMyWin').textContent = typeMyWins;
+      $('typeOpWin').textContent = typeOpWins;
+      $('typeOpProgress').textContent = '';
+
+      // 글자별 표시
+      typeRenderTarget('');
+      $('typeInput').value = '';
+      $('typeInput').disabled = false;
+      $('typeInput').focus();
+
+      socket.emit('type:start', { action: 'round', sentence: typeCurrentSentence, round: typeRound });
+    }
+
+    function typeRenderTarget(input) {
+      let html = '';
+      for (let i = 0; i < typeCurrentSentence.length; i++) {
+        if (i < input.length) {
+          if (input[i] === typeCurrentSentence[i]) {
+            html += `<span class="correct">${esc(typeCurrentSentence[i])}</span>`;
+          } else {
+            html += `<span class="wrong">${esc(typeCurrentSentence[i])}</span>`;
+          }
+        } else {
+          html += `<span class="pending">${esc(typeCurrentSentence[i])}</span>`;
+        }
+      }
+      $('typeTarget').innerHTML = html;
+    }
+
+    $('typeInput').addEventListener('input', () => {
+      if (typeFinished) return;
+      const val = $('typeInput').value;
+      typeRenderTarget(val);
+
+      // 진행률 전송
+      const progress = Math.round((val.length / typeCurrentSentence.length) * 100);
+      socket.emit('type:progress', { progress });
+
+      // 완료 체크
+      if (val === typeCurrentSentence) {
+        typeFinished = true;
+        const elapsed = ((Date.now() - typeStartTime) / 1000).toFixed(2);
+        $('typeInput').disabled = true;
+        typeMyWins++;
+        $('typeMyWin').textContent = typeMyWins;
+        socket.emit('type:finish', { time: elapsed, round: typeRound });
+        $('typeOpProgress').textContent = `완료! ${elapsed}초`;
+        $statusRight.textContent = `${elapsed}초 완료!`;
+
+        if (typeRound < 5) {
+          setTimeout(() => typeNextRound(), 2000);
+        } else {
+          const result = typeMyWins > typeOpWins ? '승리!' : (typeMyWins < typeOpWins ? '패배...' : '무승부');
+          $('typeOpProgress').textContent = `최종: 나 ${typeMyWins} : ${typeOpWins} 상대 — ${result}`;
+        }
+      }
+    });
+
+    socket.on('type:start', (data) => {
+      if (data.action === 'newgame') {
+        typeRound = 0; typeMyWins = 0; typeOpWins = 0;
+      }
+      if (data.action === 'round') {
+        typeRound = data.round;
+        typeCurrentSentence = data.sentence;
+        typeFinished = false;
+        typeStartTime = Date.now();
+        typeRenderTarget('');
+        $('typeInput').value = '';
+        $('typeInput').disabled = false;
+        $('typeRound').textContent = `라운드: ${typeRound}/5`;
+        $('typeMyWin').textContent = typeMyWins;
+        $('typeOpWin').textContent = typeOpWins;
+        $('typeOpProgress').textContent = '';
+        if (isTypeMode) $('typeInput').focus();
+      }
+    });
+
+    socket.on('type:progress', (data) => {
+      $('typeOpProgress').textContent = `상대 진행: ${data.progress}%`;
+    });
+
+    socket.on('type:finish', (data) => {
+      if (!typeFinished) {
+        typeOpWins++;
+        $('typeOpWin').textContent = typeOpWins;
+        $('typeOpProgress').textContent = `${data.nickname}님이 ${data.time}초에 완료!`;
+      }
+    });
+
+    // ========== 반응속도 배틀 ==========
+    let reactState = 'idle'; // idle, waiting, go, done
+    let reactTimeout = null;
+    let reactGoTime = 0;
+    let reactRound = 0, reactMyScore = 0, reactOpScore = 0;
+    let reactRoundDone = false;
+
+    function reactStart() {
+      reactRound++;
+      reactRoundDone = false;
+      reactState = 'waiting';
+      const box = $('reactBox');
+      box.className = 'react-wait';
+      box.textContent = '기다리세요...';
+      $('reactRound').textContent = `라운드: ${reactRound}/5`;
+      $('reactScores').textContent = `나 ${reactMyScore} : ${reactOpScore} 상대`;
+
+      const delay = 2000 + Math.random() * 4000;
+      reactTimeout = setTimeout(() => {
+        reactState = 'go';
+        reactGoTime = Date.now();
+        box.className = 'react-go';
+        box.textContent = '지금 클릭!';
+      }, delay);
+
+      socket.emit('react:start', { round: reactRound, delay });
+    }
+
+    function reactClick() {
+      const box = $('reactBox');
+      if (reactState === 'idle') {
+        reactRound = 0; reactMyScore = 0; reactOpScore = 0;
+        $('reactLog').innerHTML = '';
+        reactStart();
+        return;
+      }
+      if (reactState === 'waiting') {
+        clearTimeout(reactTimeout);
+        reactState = 'idle';
+        box.className = 'react-early';
+        box.textContent = '너무 빨랐어요! 클릭해서 재시작';
+        return;
+      }
+      if (reactState === 'go' && !reactRoundDone) {
+        const ms = Date.now() - reactGoTime;
+        reactRoundDone = true;
+        socket.emit('react:click', { ms, round: reactRound });
+      }
+    }
+
+    socket.on('react:start', (data) => {
+      reactRound = data.round;
+      reactRoundDone = false;
+      reactState = 'waiting';
+      const box = $('reactBox');
+      box.className = 'react-wait';
+      box.textContent = '기다리세요...';
+      $('reactRound').textContent = `라운드: ${reactRound}/5`;
+
+      clearTimeout(reactTimeout);
+      reactTimeout = setTimeout(() => {
+        reactState = 'go';
+        reactGoTime = Date.now();
+        box.className = 'react-go';
+        box.textContent = '지금 클릭!';
+      }, data.delay);
+    });
+
+    socket.on('react:click', (data) => {
+      const box = $('reactBox');
+      const isMe = data.id === socket.id;
+      if (isMe) reactMyScore++; else reactOpScore++;
+
+      reactState = 'idle';
+      clearTimeout(reactTimeout);
+      box.className = 'react-result';
+      box.textContent = `${data.nickname}: ${data.ms}ms!`;
+      $('reactScores').textContent = `나 ${reactMyScore} : ${reactOpScore} 상대`;
+
+      const log = $('reactLog');
+      log.innerHTML += `<div>R${data.round}: ${data.nickname} ${data.ms}ms</div>`;
+      log.scrollTop = log.scrollHeight;
+
+      if (reactRound < 5) {
+        setTimeout(() => reactStart(), 2000);
+      } else {
+        const result = reactMyScore > reactOpScore ? '승리!' : (reactMyScore < reactOpScore ? '패배...' : '무승부');
+        box.textContent += ` — 최종: ${result}`;
+        reactState = 'idle';
+        reactRound = 0;
+      }
+    });
+
+    // ========== 그림 퀴즈 ==========
+    const drawWords = [
+      // 동물
+      '고양이','강아지','펭귄','돌고래','코끼리','기린','팬더','문어','상어','독수리',
+      '카멜레온','플라밍고','해파리','고슴도치','수달','알파카','두더지','앵무새','거북이','나비',
+      '공룡','유니콘','불사조','드래곤','달팽이','개미','무당벌레','오리너구리','미어캣','해마',
+      '하마','코뿔소','치타','늑대','여우','토끼','다람쥐','박쥐','까마귀','부엉이',
+      '백조','타조','공작새','딱따구리','가오리','복어','오징어','게','랍스터','가재',
+      '전갈','도마뱀','이구아나','악어','뱀','두꺼비','개구리','지렁이','거미','사마귀',
+      '매미','잠자리','반딧불이','모기','파리','벌','말','당나귀','양','염소','돼지','소','닭',
+      // 음식
+      '피자','햄버거','초밥','타코','떡볶이','라면','치킨','마카롱','도넛','팝콘',
+      '아이스크림','소세지','김밥','붕어빵','와플','크로와상','짜장면','감자튀김','스테이크','샌드위치',
+      '탕후루','에그타르트','떡국','비빔밥','쌀국수','카레','파스타','리조또','나초','부리토',
+      '딤섬','만두','짬뽕','냉면','칼국수','수제비','호떡','계란후라이','오므라이스','돈까스',
+      '족발','보쌈','삼겹살','갈비','곱창','순대','어묵','핫도그','케밥','월남쌈',
+      '케이크','티라미수','푸딩','젤리','솜사탕','초콜릿','사탕','떡','약과','빙수',
+      '주먹밥','유부초밥','연어회','장어','곰탕','설렁탕','감자탕','부대찌개','김치찌개','된장찌개',
+      // 과일/채소
+      '사과','바나나','수박','포도','딸기','체리','키위','망고','파인애플','코코넛',
+      '레몬','아보카도','석류','두리안','리치','감','배','복숭아','자두','블루베리',
+      '당근','옥수수','브로콜리','양배추','고추','마늘','양파','감자','고구마','버섯',
+      // 사물
+      '우산','시계','안경','열쇠','가위','전구','망치','소화기','다리미','선풍기',
+      '세탁기','냉장고','변기','사다리','돋보기','나침반','모래시계','트로피','왕관','다이아몬드',
+      '풍선','루빅큐브','마이크','헤드폰','조이스틱','립스틱','향수','지갑','목걸이','반지',
+      '칫솔','비누','수건','베개','이불','옷걸이','빗자루','쓰레기통','양초','성냥',
+      '테이프','클립','스테이플러','지우개','연필깎이','삼각자','컴퍼스','현미경','망원경','체온계',
+      '주사기','청진기','목발','휠체어','안전벨트','소화전','비상구','CCTV','스피커','프린터',
+      '마우스','키보드','모니터','USB','충전기','보조배터리','셀카봉','삼각대','액자','거울',
+      '저울','계산기','금고','자물쇠','수갑','방패','칼','활','창','도끼',
+      // 탈것
+      '자동차','비행기','자전거','기차','헬리콥터','잠수함','로켓','요트','오토바이','스케이트보드',
+      '썰매','열기구','유모차','트랙터','소방차','구급차','탱크','UFO','스쿠터','카누',
+      '제트스키','행글라이더','패러글라이더','곤돌라','케이블카','지게차','크레인','덤프트럭','리무진','경찰차',
+      // 자연/장소
+      '태양','달','별','무지개','화산','폭포','선인장','야자수','이글루','피라미드',
+      '에펠탑','자유의여신상','만리장성','콜로세움','등대','놀이공원','수영장','도서관',
+      '해변','사막','정글','동굴','빙하','오아시스','간헐천','산호초','늪','절벽',
+      '온천','빙산','토네이도','쓰나미','지진','유성','일식','월식','오로라','신기루',
+      '경복궁','남산타워','한라산','나이아가라폭포','그랜드캐니언','타지마할','빅벤',
+      // 건물/시설
+      '병원','학교','교회','성','궁전','감옥','공항','항구','주유소','놀이터',
+      '체육관','영화관','미술관','동물원','수족관','백화점','편의점','세차장','주차장','터널',
+      // 직업/사람
+      '의사','소방관','우주비행사','해적','닌자','마법사','산타클로스','좀비','미라','로봇',
+      '발레리나','셰프','탐정','광대','심판','DJ','경찰','군인','카우보이','사무라이',
+      '파라오','바이킹','기사','왕','공주','천사','악마','뱀파이어','늑대인간','프랑켄슈타인',
+      '인어공주','피터팬','신데렐라','백설공주','알라딘',
+      // 행동/상황
+      '셀카','하품','재채기','윙크','악수','줄다리기','줄넘기','서핑','스키','번지점프',
+      '낚시','캠핑','빨래','설거지','다림질','졸음운전','스카이다이빙','암벽등반','양궁',
+      '볼링','당구','다트','탁구','배드민턴','권투','레슬링','펜싱','역도','철봉',
+      '물구나무','외줄타기','마술','저글링','로데오','윈드서핑','래프팅','봅슬레이',
+      '림보','팔씨름','눈싸움','눈사람','모래성','연날리기','팽이치기','제기차기','윷놀이',
+      // 감정/추상
+      '중력','와이파이','비밀번호','알람','데자뷰','멀미','소름','뇌','심장','DNA',
+      '블랙홀','그림자','메아리','딸꾹질','방귀','트림','꿈','악몽','시차','숙취',
+      '사랑','이별','질투','배신','우정','외로움','향수병','긴장','공포','분노',
+      // 스포츠
+      '축구','야구','농구','배구','테니스','골프','수영','마라톤','피겨스케이팅','컬링',
+      '승마','사격','유도','태권도','검도','씨름','크리켓','럭비','하키','스노보드',
+      // 악기/음악
+      '피아노','기타','드럼','바이올린','첼로','트럼펫','하프','실로폰','탬버린','마라카스',
+      '하모니카','아코디언','백파이프','우쿨렐레','플루트','색소폰','거문고','대금','장구','꽹과리',
+      // 의류/패션
+      '넥타이','나비넥타이','한복','기모노','턱시도','비키니','레인코트','장갑','목도리','부츠',
+      '슬리퍼','하이힐','운동화','치마','청바지','후드티','조끼','망토','헬멧','선글라스',
+      // 특이한것
+      '교통체증','엘리베이터','에스컬레이터','자판기','회전문','미끄럼틀','시소','그네',
+      '분수대','가로등','맨홀','신호등','횡단보도','과속방지턱','블랙박스','드론',
+      '빨대','코르크','지퍼','단추','벨크로','안전핀','압정','고무줄','빨래집게','병따개',
+      '깡통따개','호루라기','딱풀','포스트잇','명함','도장','주판','타자기','축음기','카세트테이프',
+      '플로피디스크','페이저','워키토키','확성기','사이렌','풍향계','풍차','물레방아','우물','굴뚝',
+      '피뢰침','안테나','위성접시','태양광패널','정수기','가습기','제습기','공기청정기','로봇청소기',
+    ];
+    const drawCanvas = $('drawCanvas');
+    const drawCtx = drawCanvas.getContext('2d');
+    let drawIsDrawing = false, drawLastX = 0, drawLastY = 0;
+    let drawCurrentColor = '#000';
+    let drawCurrentWord = '';
+    let drawAmDrawer = false;
+    // drawScores는 위에서 선언됨
+
+    drawCtx.lineWidth = 6;
+    drawCtx.lineCap = 'round';
+    drawCtx.lineJoin = 'round';
+
+    drawCanvas.addEventListener('mousedown', (e) => {
+      if (!drawAmDrawer) return;
+      drawIsDrawing = true;
+      const rect = drawCanvas.getBoundingClientRect();
+      const scaleX = drawCanvas.width / rect.width;
+      const scaleY = drawCanvas.height / rect.height;
+      drawLastX = (e.clientX - rect.left) * scaleX;
+      drawLastY = (e.clientY - rect.top) * scaleY;
+    });
+
+    drawCanvas.addEventListener('mousemove', (e) => {
+      if (!drawIsDrawing || !drawAmDrawer) return;
+      const rect = drawCanvas.getBoundingClientRect();
+      const scaleX = drawCanvas.width / rect.width;
+      const scaleY = drawCanvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
+      drawCtx.strokeStyle = drawCurrentColor;
+      drawCtx.beginPath();
+      drawCtx.moveTo(drawLastX, drawLastY);
+      drawCtx.lineTo(x, y);
+      drawCtx.stroke();
+
+      socket.emit('draw:stroke', {
+        x1: drawLastX, y1: drawLastY, x2: x, y2: y,
+        color: drawCurrentColor, width: drawCtx.lineWidth
+      });
+
+      drawLastX = x;
+      drawLastY = y;
+    });
+
+    drawCanvas.addEventListener('mouseup', () => { drawIsDrawing = false; });
+    drawCanvas.addEventListener('mouseleave', () => { drawIsDrawing = false; });
+
+    // 캔버스 터치 드로잉 지원
+    function getCanvasTouch(e) {
+      const rect = drawCanvas.getBoundingClientRect();
+      const scaleX = drawCanvas.width / rect.width;
+      const scaleY = drawCanvas.height / rect.height;
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      };
+    }
+    drawCanvas.addEventListener('touchstart', (e) => {
+      if (!drawAmDrawer) return;
+      e.preventDefault();
+      drawIsDrawing = true;
+      const p = getCanvasTouch(e);
+      drawLastX = p.x; drawLastY = p.y;
+    }, { passive: false });
+    drawCanvas.addEventListener('touchmove', (e) => {
+      if (!drawIsDrawing || !drawAmDrawer) return;
+      e.preventDefault();
+      const p = getCanvasTouch(e);
+      drawCtx.strokeStyle = drawCurrentColor;
+      drawCtx.beginPath();
+      drawCtx.moveTo(drawLastX, drawLastY);
+      drawCtx.lineTo(p.x, p.y);
+      drawCtx.stroke();
+      socket.emit('draw:stroke', {
+        x1: drawLastX, y1: drawLastY, x2: p.x, y2: p.y,
+        color: drawCurrentColor, width: drawCtx.lineWidth
+      });
+      drawLastX = p.x; drawLastY = p.y;
+    }, { passive: false });
+    drawCanvas.addEventListener('touchend', () => { drawIsDrawing = false; });
+
+    function drawSetColor(color, btn) {
+      drawCurrentColor = color;
+      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function drawClear(emit) {
+      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      if (emit) socket.emit('draw:clear');
+    }
+
+    let drawMyReady = false;
+    let drawScores = {}; // nickname → score
+
+    function drawShowLobby() {
+      $('drawLobby').style.display = 'flex';
+      $('drawGame').style.display = 'none';
+      drawMyReady = false;
+      $('drawReadyBtn').textContent = 'Ready';
+      $('drawReadyBtn').style.background = '#217346';
+      $('drawCountdown').style.display = 'none';
+    }
+
+    function drawShowGame() {
+      $('drawLobby').style.display = 'none';
+      $('drawGame').style.display = 'flex';
+    }
+
+    function drawToggleReady() {
+      drawMyReady = !drawMyReady;
+      $('drawReadyBtn').textContent = drawMyReady ? 'Ready 취소' : 'Ready';
+      $('drawReadyBtn').style.background = drawMyReady ? '#cc4444' : '#217346';
+      socket.emit('draw:toggleReady');
+    }
+
+    function drawUpdateScoreBoard() {
+      const parts = Object.entries(drawScores).map(([n, s]) => `${n}: ${s}`);
+      $('drawScoreBoard').textContent = parts.join(' | ') || '';
+    }
+
+    function drawNewRound() {
+      drawAmDrawer = true;
+      drawCurrentWord = drawWords[Math.floor(Math.random() * drawWords.length)];
+      drawClear(true);
+      $('drawWord').textContent = `제시어: ${drawCurrentWord}`;
+      $('drawWord').style.display = 'inline';
+      $('drawHint').textContent = '';
+      $('drawRole').textContent = '그리는 사람';
+      $('drawGuesses').innerHTML = '';
+      $('drawNewBtn').style.display = 'inline';
+
+      // 상대에게 힌트 전송 (글자수)
+      const hint = '_ '.repeat(drawCurrentWord.length).trim();
+      socket.emit('draw:word', { hint, length: drawCurrentWord.length });
+    }
+
+    $('drawGuessInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.isComposing) {
+        const guess = $('drawGuessInput').value.trim();
+        if (!guess) return;
+        $('drawGuessInput').value = '';
+
+        socket.emit('draw:guess', { guess });
+
+        if (!drawAmDrawer && guess === drawCurrentWord) {
+          socket.emit('draw:correct', { word: drawCurrentWord, guesser: myNick });
+        }
+      }
+    });
+
+    // 로비 상태 수신
+    socket.on('draw:lobby', (list) => {
+      let html = '';
+      list.forEach(p => {
+        const meClass = p.id === socket.id ? ' me' : '';
+        const readyClass = p.ready ? 'ready' : 'not-ready';
+        html += `<span class="draw-player ${readyClass}${meClass}">${esc(p.nickname)} ${p.ready ? '✓' : '...'}</span> `;
+      });
+      $('drawPlayerList').innerHTML = html || '<span style="color:#999;">참가자 없음</span>';
+    });
+
+    socket.on('draw:full', () => {
+      $('drawPlayerList').innerHTML = '<span style="color:#e74c3c;">방이 가득 찼습니다 (5/5)</span>';
+    });
+
+    // 카운트다운
+    socket.on('draw:countdown', (data) => {
+      if (data.count < 0) {
+        // 취소
+        $('drawCountdown').style.display = 'none';
+        return;
+      }
+      $('drawCountdown').style.display = 'block';
+      $('drawCountdown').textContent = data.count;
+    });
+
+    // 서버가 출제자를 지정 → 게임 시작
+    socket.on('draw:assign', (data) => {
+      drawShowGame();
+      $('drawCountdown').style.display = 'none';
+      if (data.drawerId === socket.id) {
+        drawNewRound();
+      } else {
+        drawAmDrawer = false;
+        drawCurrentWord = '';
+        $('drawWord').style.display = 'none';
+        $('drawHint').textContent = '상대방이 그림을 준비 중...';
+        $('drawRole').textContent = '맞추는 사람';
+        $('drawNewBtn').style.display = 'none';
+        $('drawGuesses').innerHTML = '';
+        drawClear(false);
+      }
+    });
+
+    socket.on('draw:stroke', (data) => {
+      drawCtx.strokeStyle = data.color;
+      drawCtx.lineWidth = data.width;
+      drawCtx.beginPath();
+      drawCtx.moveTo(data.x1, data.y1);
+      drawCtx.lineTo(data.x2, data.y2);
+      drawCtx.stroke();
+    });
+
+    socket.on('draw:clear', () => {
+      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    });
+
+    socket.on('draw:word', (data) => {
+      drawAmDrawer = false;
+      drawCurrentWord = data.hint.replace(/ /g, '').length ? '' : '';
+      drawClear(false);
+      $('drawWord').style.display = 'none';
+      $('drawHint').textContent = data.hint;
+      $('drawRole').textContent = '맞추는 사람';
+      $('drawGuesses').innerHTML = '';
+      $('drawNewBtn').style.display = 'none';
+      // 제시어를 모름 — 서버에서 정답 확인은 출제자가 함
+    });
+
+    socket.on('draw:guess', (data) => {
+      const $g = $('drawGuesses');
+      $g.innerHTML += `<div><b>${esc(data.nickname)}</b>: ${esc(data.guess)}</div>`;
+      $g.scrollTop = $g.scrollHeight;
+
+      // 출제자가 정답 확인
+      if (drawAmDrawer && data.guess === drawCurrentWord) {
+        socket.emit('draw:correct', { word: drawCurrentWord, guesser: data.nickname });
+      }
+    });
+
+    socket.on('draw:correct', (data) => {
+      const $g = $('drawGuesses');
+      $g.innerHTML += `<div style="color:#217346;font-weight:700;">${data.guesser}님 정답! [${data.word}]</div>`;
+      $g.scrollTop = $g.scrollHeight;
+      $('drawHint').textContent = `정답: ${data.word}`;
+
+      // 점수 업데이트
+      if (!drawScores[data.guesser]) drawScores[data.guesser] = 0;
+      drawScores[data.guesser]++;
+      drawUpdateScoreBoard();
+
+      // 맞춘 사람이 다음 출제자 → 3초 후 자동 시작
+      if (data.guesser === myNick) {
+        $('drawRole').textContent = '다음 출제자!';
+        setTimeout(() => { drawNewRound(); }, 3000);
+      } else {
+        drawAmDrawer = false;
+        $('drawRole').textContent = '다음: 맞추는 사람';
+        $('drawNewBtn').style.display = 'none';
+      }
+    });
+
+    // ========== 색깔 찾기 ==========
+    let colorLevel = 1;
+    let colorMyScore = 0, colorOpScore = 0;
+    let colorAnswerR = -1, colorAnswerC = -1;
+    let colorRoundActive = false;
+
+    function colorNewRound(emit) {
+      colorRoundActive = true;
+      $('colorResult').textContent = '';
+
+      // 레벨에 따라 그리드 크기와 색차 조정
+      const gridSize = Math.min(2 + colorLevel, 10);
+      const diff = Math.max(50 - colorLevel * 4, 8);
+
+      // 랜덤 베이스 컬러
+      const r = 30 + Math.floor(Math.random() * 180);
+      const g = 30 + Math.floor(Math.random() * 180);
+      const b = 30 + Math.floor(Math.random() * 180);
+
+      // 다른 셀 위치
+      colorAnswerR = Math.floor(Math.random() * gridSize);
+      colorAnswerC = Math.floor(Math.random() * gridSize);
+
+      // 다른 색
+      const dr = (Math.random() > 0.5 ? diff : -diff);
+      const dg = (Math.random() > 0.5 ? diff : -diff);
+
+      const cellSize = Math.max(30, Math.floor(280 / gridSize));
+
+      const grid = $('colorGrid');
+      grid.style.gridTemplateColumns = `repeat(${gridSize}, ${cellSize}px)`;
+      grid.innerHTML = '';
+
+      for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+          const div = document.createElement('div');
+          div.className = 'color-cell';
+          div.style.width = cellSize + 'px';
+          div.style.height = cellSize + 'px';
+
+          if (row === colorAnswerR && col === colorAnswerC) {
+            div.style.background = `rgb(${clamp(r+dr)},${clamp(g+dg)},${b})`;
+          } else {
+            div.style.background = `rgb(${r},${g},${b})`;
+          }
+
+          div.addEventListener('click', () => {
+            if (!colorRoundActive) return;
+            if (row === colorAnswerR && col === colorAnswerC) {
+              colorRoundActive = false;
+              colorMyScore++;
+              colorLevel++;
+              $('colorMyScore').textContent = colorMyScore;
+              $('colorLevel').textContent = colorLevel;
+              $('colorResult').textContent = '정답!';
+              $('colorResult').style.color = '#217346';
+              div.style.border = '3px solid #217346';
+              socket.emit('color:found', { level: colorLevel });
+              setTimeout(() => colorNewRound(true), 1000);
+            } else {
+              div.style.border = '3px solid #e74c3c';
+              setTimeout(() => { div.style.border = 'none'; }, 300);
+            }
+          });
+
+          grid.appendChild(div);
+        }
+      }
+
+      $('colorLevel').textContent = colorLevel;
+      $('colorMyScore').textContent = colorMyScore;
+      $('colorOpScore').textContent = colorOpScore;
+      $statusRight.textContent = `레벨: ${colorLevel} | 나 ${colorMyScore} : ${colorOpScore} 상대`;
+
+      if (emit) {
+        socket.emit('color:start', {
+          gridSize, r, g, b, dr, dg, ansR: colorAnswerR, ansC: colorAnswerC, level: colorLevel
+        });
+      }
+    }
+
+    function clamp(v) { return Math.max(0, Math.min(255, v)); }
+
+    socket.on('color:start', (data) => {
+      colorLevel = data.level;
+      colorRoundActive = true;
+      colorAnswerR = data.ansR;
+      colorAnswerC = data.ansC;
+      $('colorResult').textContent = '';
+
+      const cellSize = Math.max(30, Math.floor(280 / data.gridSize));
+      const grid = $('colorGrid');
+      grid.style.gridTemplateColumns = `repeat(${data.gridSize}, ${cellSize}px)`;
+      grid.innerHTML = '';
+
+      for (let row = 0; row < data.gridSize; row++) {
+        for (let col = 0; col < data.gridSize; col++) {
+          const div = document.createElement('div');
+          div.className = 'color-cell';
+          div.style.width = cellSize + 'px';
+          div.style.height = cellSize + 'px';
+
+          if (row === data.ansR && col === data.ansC) {
+            div.style.background = `rgb(${clamp(data.r+data.dr)},${clamp(data.g+data.dg)},${data.b})`;
+          } else {
+            div.style.background = `rgb(${data.r},${data.g},${data.b})`;
+          }
+
+          div.addEventListener('click', () => {
+            if (!colorRoundActive) return;
+            if (row === data.ansR && col === data.ansC) {
+              colorRoundActive = false;
+              colorMyScore++;
+              colorLevel++;
+              $('colorMyScore').textContent = colorMyScore;
+              $('colorLevel').textContent = colorLevel;
+              $('colorResult').textContent = '정답!';
+              $('colorResult').style.color = '#217346';
+              div.style.border = '3px solid #217346';
+              socket.emit('color:found', { level: colorLevel });
+              setTimeout(() => colorNewRound(true), 1000);
+            } else {
+              div.style.border = '3px solid #e74c3c';
+              setTimeout(() => { div.style.border = 'none'; }, 300);
+            }
+          });
+
+          grid.appendChild(div);
+        }
+      }
+
+      $('colorLevel').textContent = colorLevel;
+    });
+
+    socket.on('color:found', (data) => {
+      colorOpScore++;
+      $('colorOpScore').textContent = colorOpScore;
+      $('colorResult').textContent = `${data.nickname}님이 먼저 찾음!`;
+      $('colorResult').style.color = '#e74c3c';
+      colorRoundActive = false;
+    });
+
+    // ========== 초기화 ==========
+    for (const [k, v] of Object.entries(dummyData)) {
+      cellData[k] = v;
+    }
+  </script>
+</body>
+</html>
