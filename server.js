@@ -200,7 +200,7 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = 9999;
+const PORT = process.env.PORT || 9999;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`채팅 서버 실행 중: http://localhost:${PORT}`);
   console.log('E2E 암호화 활성화: ECDH P-521 + AES-256-GCM + HKDF-SHA512');
