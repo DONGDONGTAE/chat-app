@@ -16,23 +16,27 @@ let drawCountdownTimer = null;
 io.on('connection', (socket) => {
   console.log(`접속: ${socket.id}`);
 
-  socket.on('join', (nickname) => {
-    users.set(socket.id, { nickname });
-    io.emit('system', `${nickname}님이 입장했습니다.`);
-    io.emit('userCount', users.size);
+  socket.on('join', ({ nickname, room }) => {
+    socket.join(room);
+    users.set(socket.id, { nickname, room });
+    const roomCount = [...users.values()].filter(u => u.room === room).length;
+    io.to(room).emit('system', `${nickname}님이 입장했습니다. (${room})`);
+    io.to(room).emit('userCount', roomCount);
   });
 
-  // 공개키 교환: 상대방에게 전달
+  // 공개키 교환: 같은 방 상대방에게 전달
   socket.on('publicKey', (jwk) => {
     const user = users.get(socket.id);
     if (user) user.publicKey = jwk;
-    socket.broadcast.emit('publicKey', { id: socket.id, jwk });
+    if (user) socket.to(user.room).emit('publicKey', { id: socket.id, jwk });
   });
 
   // 상대방 공개키 요청
   socket.on('requestKeys', () => {
+    const me = users.get(socket.id);
+    if (!me) return;
     for (const [id, user] of users.entries()) {
-      if (id !== socket.id && user.publicKey) {
+      if (id !== socket.id && user.room === me.room && user.publicKey) {
         socket.emit('publicKey', { id, jwk: user.publicKey });
       }
     }
@@ -42,158 +46,162 @@ io.on('connection', (socket) => {
   socket.on('chat', (encryptedPayload) => {
     const user = users.get(socket.id);
     const nickname = user ? user.nickname : '익명';
-    socket.broadcast.emit('chat', {
+    const room = user ? user.room : null;
+    if (room) socket.to(room).emit('chat', {
       nickname,
       encrypted: encryptedPayload,
       time: new Date().toLocaleTimeString('ko-KR')
     });
   });
 
+  function getRoom() { const u = users.get(socket.id); return u ? u.room : null; }
+  function getNick() { const u = users.get(socket.id); return u ? u.nickname : '???'; }
+
   // ===== 오목 =====
   socket.on('gomoku:place', (data) => {
-    socket.broadcast.emit('gomoku:place', { ...data, from: socket.id });
+    const room = getRoom(); if (room) socket.to(room).emit('gomoku:place', { ...data, from: socket.id });
   });
-
   socket.on('gomoku:reset', () => {
-    io.emit('gomoku:reset');
+    const room = getRoom(); if (room) io.to(room).emit('gomoku:reset');
   });
 
   // ===== 2048 2P =====
   socket.on('2048:update', (data) => {
-    const user = users.get(socket.id);
-    socket.broadcast.emit('2048:update', { ...data, nickname: user ? user.nickname : '???' });
+    const room = getRoom(); if (room) socket.to(room).emit('2048:update', { ...data, nickname: getNick() });
   });
   socket.on('2048:reset', () => {
-    io.emit('2048:reset');
+    const room = getRoom(); if (room) io.to(room).emit('2048:reset');
   });
 
   // ===== 지뢰찾기 2P =====
   socket.on('mine:init', (data) => {
-    // 호스트가 보드 생성 후 공유
-    socket.broadcast.emit('mine:init', data);
+    const room = getRoom(); if (room) socket.to(room).emit('mine:init', data);
   });
   socket.on('mine:reveal', (data) => {
-    socket.broadcast.emit('mine:reveal', { ...data, from: socket.id });
+    const room = getRoom(); if (room) socket.to(room).emit('mine:reveal', { ...data, from: socket.id });
   });
   socket.on('mine:flag', (data) => {
-    socket.broadcast.emit('mine:flag', { ...data, from: socket.id });
+    const room = getRoom(); if (room) socket.to(room).emit('mine:flag', { ...data, from: socket.id });
   });
   socket.on('mine:reset', () => {
-    io.emit('mine:reset');
+    const room = getRoom(); if (room) io.to(room).emit('mine:reset');
   });
 
   // ===== 타자 레이싱 =====
-  socket.on('type:start', (data) => { io.emit('type:start', data); });
+  socket.on('type:start', (data) => { const room = getRoom(); if (room) io.to(room).emit('type:start', data); });
   socket.on('type:progress', (data) => {
-    socket.broadcast.emit('type:progress', data);
+    const room = getRoom(); if (room) socket.to(room).emit('type:progress', data);
   });
   socket.on('type:finish', (data) => {
-    const user = users.get(socket.id);
-    io.emit('type:finish', { ...data, nickname: user ? user.nickname : '???' });
+    const room = getRoom(); if (room) io.to(room).emit('type:finish', { ...data, nickname: getNick() });
   });
 
   // ===== 반응속도 배틀 =====
-  socket.on('react:start', (data) => { io.emit('react:start', data); });
+  socket.on('react:start', (data) => { const room = getRoom(); if (room) io.to(room).emit('react:start', data); });
   socket.on('react:click', (data) => {
-    const user = users.get(socket.id);
-    io.emit('react:click', { ...data, id: socket.id, nickname: user ? user.nickname : '???' });
+    const room = getRoom(); if (room) io.to(room).emit('react:click', { ...data, id: socket.id, nickname: getNick() });
   });
 
   // ===== 그림 퀴즈 (최대 5인) =====
   socket.on('draw:join', () => {
-    if (drawPlayers.size >= 5) { socket.emit('draw:full'); return; }
-    const user = users.get(socket.id);
-    drawPlayers.set(socket.id, { nickname: user ? user.nickname : '???', ready: false });
-    broadcastDrawLobby();
+    const room = getRoom();
+    if (!room) return;
+    // 방별 drawPlayers 필터
+    const roomDrawCount = [...drawPlayers.values()].filter(p => p.room === room).length;
+    if (roomDrawCount >= 5) { socket.emit('draw:full'); return; }
+    drawPlayers.set(socket.id, { nickname: getNick(), ready: false, room });
+    broadcastDrawLobby(room);
   });
 
   socket.on('draw:leave', () => {
+    const room = getRoom();
     drawPlayers.delete(socket.id);
-    broadcastDrawLobby();
-    // 카운트다운 중이면 취소
-    if (drawCountdownTimer) { clearInterval(drawCountdownTimer); drawCountdownTimer = null; io.emit('draw:countdown', { count: -1 }); }
+    if (room) broadcastDrawLobby(room);
+    if (drawCountdownTimer) { clearInterval(drawCountdownTimer); drawCountdownTimer = null; if (room) io.to(room).emit('draw:countdown', { count: -1 }); }
   });
 
   socket.on('draw:toggleReady', () => {
     const p = drawPlayers.get(socket.id);
     if (!p) return;
     p.ready = !p.ready;
-    broadcastDrawLobby();
-    checkDrawAllReady();
+    broadcastDrawLobby(p.room);
+    checkDrawAllReady(p.room);
   });
 
-  function broadcastDrawLobby() {
+  function broadcastDrawLobby(room) {
     const list = [];
-    for (const [id, p] of drawPlayers) list.push({ id, nickname: p.nickname, ready: p.ready });
-    io.emit('draw:lobby', list);
+    for (const [id, p] of drawPlayers) {
+      if (p.room === room) list.push({ id, nickname: p.nickname, ready: p.ready });
+    }
+    io.to(room).emit('draw:lobby', list);
   }
 
-  function checkDrawAllReady() {
-    if (drawCountdownTimer) return; // 이미 카운트다운 중
-    const players = [...drawPlayers.entries()];
+  function checkDrawAllReady(room) {
+    if (drawCountdownTimer) return;
+    const players = [...drawPlayers.entries()].filter(([, p]) => p.room === room);
     if (players.length < 2) return;
     const allReady = players.every(([, p]) => p.ready);
     if (!allReady) return;
 
-    // 5초 카운트다운 시작
     let count = 5;
-    io.emit('draw:countdown', { count });
+    io.to(room).emit('draw:countdown', { count });
     drawCountdownTimer = setInterval(() => {
       count--;
       if (count <= 0) {
         clearInterval(drawCountdownTimer);
         drawCountdownTimer = null;
-        // 랜덤 출제자 지정
-        const ids = [...drawPlayers.keys()];
+        const ids = players.map(([id]) => id);
         const drawerId = ids[Math.floor(Math.random() * ids.length)];
-        io.emit('draw:assign', { drawerId });
-        // 레디 초기화
-        for (const p of drawPlayers.values()) p.ready = false;
+        io.to(room).emit('draw:assign', { drawerId });
+        for (const [, p] of players) p.ready = false;
       } else {
-        // 중간에 누가 레디 해제하면 취소
-        const stillAllReady = [...drawPlayers.values()].every(p => p.ready);
-        if (!stillAllReady || drawPlayers.size < 2) {
+        const roomPlayers = [...drawPlayers.entries()].filter(([, p]) => p.room === room);
+        const stillAllReady = roomPlayers.every(([, p]) => p.ready);
+        if (!stillAllReady || roomPlayers.length < 2) {
           clearInterval(drawCountdownTimer);
           drawCountdownTimer = null;
-          io.emit('draw:countdown', { count: -1 }); // 취소
+          io.to(room).emit('draw:countdown', { count: -1 });
           return;
         }
-        io.emit('draw:countdown', { count });
+        io.to(room).emit('draw:countdown', { count });
       }
     }, 1000);
   }
 
-  socket.on('draw:stroke', (data) => { socket.broadcast.emit('draw:stroke', data); });
-  socket.on('draw:clear', () => { socket.broadcast.emit('draw:clear'); });
-  socket.on('draw:word', (data) => { socket.broadcast.emit('draw:word', data); });
+  socket.on('draw:stroke', (data) => { const room = getRoom(); if (room) socket.to(room).emit('draw:stroke', data); });
+  socket.on('draw:clear', () => { const room = getRoom(); if (room) socket.to(room).emit('draw:clear'); });
+  socket.on('draw:word', (data) => { const room = getRoom(); if (room) socket.to(room).emit('draw:word', data); });
   socket.on('draw:guess', (data) => {
-    const user = users.get(socket.id);
-    io.emit('draw:guess', { ...data, nickname: user ? user.nickname : '???' });
+    const room = getRoom(); if (room) io.to(room).emit('draw:guess', { ...data, nickname: getNick() });
   });
-  socket.on('draw:correct', (data) => { io.emit('draw:correct', data); });
+  socket.on('draw:correct', (data) => { const room = getRoom(); if (room) io.to(room).emit('draw:correct', data); });
 
-  // ===== 색깔 찾기 =====
-  socket.on('color:start', (data) => { io.emit('color:start', data); });
+  // ===== 색깔 찾기 (1~5인) =====
+  socket.on('color:start', (data) => { const room = getRoom(); if (room) io.to(room).emit('color:start', data); });
   socket.on('color:found', (data) => {
-    const user = users.get(socket.id);
-    io.emit('color:found', { ...data, id: socket.id, nickname: user ? user.nickname : '???' });
+    const room = getRoom(); if (room) io.to(room).emit('color:found', { ...data, id: socket.id, nickname: getNick() });
   });
 
   socket.on('disconnect', () => {
     const user = users.get(socket.id);
     if (user) {
+      const room = user.room;
       users.delete(socket.id);
-      io.emit('system', `${user.nickname}님이 퇴장했습니다.`);
-      io.emit('userCount', users.size);
-      io.emit('peerDisconnected', socket.id);
+      const roomCount = [...users.values()].filter(u => u.room === room).length;
+      io.to(room).emit('system', `${user.nickname}님이 퇴장했습니다.`);
+      io.to(room).emit('userCount', roomCount);
+      io.to(room).emit('peerDisconnected', socket.id);
     }
     // 그림퀴즈 로비에서 제거
     if (drawPlayers.has(socket.id)) {
+      const dp = drawPlayers.get(socket.id);
+      const room = dp.room;
       drawPlayers.delete(socket.id);
-      broadcastDrawLobby();
-      if (drawCountdownTimer && (drawPlayers.size < 2 || ![...drawPlayers.values()].every(p => p.ready))) {
+      broadcastDrawLobby(room);
+      const roomDrawPlayers = [...drawPlayers.values()].filter(p => p.room === room);
+      if (drawCountdownTimer && (roomDrawPlayers.length < 2 || !roomDrawPlayers.every(p => p.ready))) {
         clearInterval(drawCountdownTimer); drawCountdownTimer = null;
-        io.emit('draw:countdown', { count: -1 });
+        io.to(room).emit('draw:countdown', { count: -1 });
       }
     }
     console.log(`퇴장: ${socket.id}`);

@@ -15,16 +15,21 @@
       box-shadow: 2px 2px 8px rgba(0,0,0,0.2); z-index: 200;
     }
     #login h1 { font-size: 13px; font-weight: normal; margin-bottom: 12px; color: #333; }
-    #login input {
+    #login .login-row { display: flex; align-items: center; margin-bottom: 8px; gap: 8px; }
+    #login .login-row:last-child { margin-bottom: 0; }
+    #login label { font-size: 11px; color: #555; width: 50px; flex-shrink: 0; text-align: right; }
+    #login input, #login select {
       padding: 4px 6px; font-size: 12px; border: 1px solid #999; outline: none;
-      width: 180px; font-family: Calibri, sans-serif;
+      flex: 1; font-family: Calibri, sans-serif;
     }
-    #login input:focus { border-color: #217346; }
+    #login select { cursor: pointer; }
+    #login input:focus, #login select:focus { border-color: #217346; }
     #login button {
-      margin-left: 8px; padding: 4px 16px; font-size: 11px;
-      background: #217346; color: #fff; border: 1px solid #165a32; cursor: pointer;
+      padding: 6px 20px; font-size: 11px;
+      background: #217346; color: #fff; border: 1px solid #165a32; cursor: pointer; width: 100%;
     }
     #login button:hover { background: #165a32; }
+    #login .login-error { font-size: 11px; color: #e74c3c; display: none; margin-bottom: 6px; text-align: center; }
 
     /* 엑셀 리본 */
     #ribbon { background: #217346; flex-shrink: 0; width: 100%; }
@@ -180,34 +185,48 @@
     }
 
     /* ===== 2048 모드 ===== */
-    #game2048Mode { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; background: #fff; gap: 8px; }
-    #game2048Info { font-size: 11px; color: #444; display: flex; gap: 20px; align-items: center; }
+    #game2048Mode { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; background: #fff; gap: 12px; }
+    #game2048Info { font-size: 13px; color: #444; display: flex; gap: 16px; align-items: center; }
+    #game2048Info b { font-size: 18px; color: #217346; }
     #game2048Board {
-      display: grid; grid-template-columns: repeat(4, 70px); grid-template-rows: repeat(4, 70px);
-      gap: 4px; background: #bbada0; padding: 4px; border-radius: 4px;
+      display: grid; grid-template-columns: repeat(4, 72px); grid-template-rows: repeat(4, 72px);
+      gap: 6px; background: #7c7165; padding: 6px; border-radius: 10px;
     }
-    .tile-2048 {
-      width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;
-      font-size: 22px; font-weight: 700; border-radius: 3px;
-      font-family: Calibri, sans-serif; transition: all 0.1s;
+    .tile-cell {
+      width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800; border-radius: 6px;
+      font-family: 'Segoe UI', Calibri, sans-serif;
     }
-    .tile-0 { background: #cdc1b4; }
-    .tile-2 { background: #eee4da; color: #776e65; }
-    .tile-4 { background: #ede0c8; color: #776e65; }
-    .tile-8 { background: #f2b179; color: #f9f6f2; }
-    .tile-16 { background: #f59563; color: #f9f6f2; }
-    .tile-32 { background: #f67c5f; color: #f9f6f2; }
-    .tile-64 { background: #f65e3b; color: #f9f6f2; }
-    .tile-128 { background: #edcf72; color: #f9f6f2; font-size: 20px; }
-    .tile-256 { background: #edcc61; color: #f9f6f2; font-size: 20px; }
-    .tile-512 { background: #edc850; color: #f9f6f2; font-size: 20px; }
-    .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 16px; }
-    .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 16px; }
-    .tile-super { background: #3c3a32; color: #f9f6f2; font-size: 14px; }
+    .tile-0 { background: #a69888; }
+    .tile-2 { background: #ffe066; color: #8a6d00; }
+    .tile-4 { background: #ffa94d; color: #fff; }
+    .tile-8 { background: #ff6b6b; color: #fff; }
+    .tile-16 { background: #e64980; color: #fff; }
+    .tile-32 { background: #be4bdb; color: #fff; }
+    .tile-64 { background: #7950f2; color: #fff; }
+    .tile-128 { background: #4c6ef5; color: #fff; font-size: 20px; }
+    .tile-256 { background: #15aabf; color: #fff; font-size: 20px; }
+    .tile-512 { background: #12b886; color: #fff; font-size: 20px; }
+    .tile-1024 { background: #2f9e44; color: #fff; font-size: 16px; }
+    .tile-2048 { background: #e8590c; color: #fff; font-size: 16px; box-shadow: 0 0 20px rgba(232,89,12,0.6); }
+    .tile-super { background: #1a1a2e; color: #ffd43b; font-size: 14px; box-shadow: 0 0 20px rgba(255,212,59,0.5); }
+
+    @keyframes tile-pop {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes tile-merge {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+    .tile-new { animation: tile-pop 0.15s ease-out; }
+    .tile-merged { animation: tile-merge 0.15s ease-out; }
     #game2048Controls { display: flex; gap: 8px; }
     #game2048Controls button {
-      padding: 3px 14px; font-size: 11px; background: #217346; color: #fff;
-      border: 1px solid #165a32; cursor: pointer;
+      padding: 6px 20px; font-size: 12px; background: #217346; color: #fff;
+      border: 1px solid #165a32; cursor: pointer; border-radius: 4px;
     }
 
     /* ===== 지뢰찾기 모드 ===== */
@@ -381,10 +400,9 @@
       #mobileMenuBtn { display: flex; }
 
       /* 로그인 */
-      #login { width: 85vw; padding: 20px; }
-      #login input { width: 100%; }
-      #login button { margin-left: 6px; padding: 6px 16px; }
-      #login div { flex-wrap: nowrap; }
+      #login { width: 85vw; max-width: 320px; padding: 20px; }
+      #login input, #login select { width: 100%; }
+      #login button { padding: 8px 16px; }
 
       /* 리본 간소화 */
       .title-bar { font-size: 10px; padding: 3px 8px; }
@@ -429,13 +447,12 @@
 
       /* 2048 */
       #game2048Board {
-        grid-template-columns: repeat(4, 60px); grid-template-rows: repeat(4, 60px);
-        gap: 3px; padding: 3px;
+        grid-template-columns: repeat(4, 62px); grid-template-rows: repeat(4, 62px);
+        gap: 5px; padding: 5px;
       }
-      .tile-2048 { width: 60px; height: 60px; font-size: 18px; }
-      .tile-128, .tile-256, .tile-512 { font-size: 16px; }
-      .tile-1024, .tile-2048 { font-size: 13px; }
-      #opponent2048Board { transform: scale(0.5); }
+      .tile-cell { width: 62px; height: 62px; font-size: 20px; }
+      .tile-128, .tile-256, .tile-512 { font-size: 17px; }
+      .tile-1024, .tile-2048 { font-size: 14px; }
 
       /* 지뢰찾기 */
       #mineBoard td { width: 28px; height: 28px; font-size: 13px; }
@@ -468,9 +485,10 @@
 
     @media (max-width: 400px) {
       #game2048Board {
-        grid-template-columns: repeat(4, 50px); grid-template-rows: repeat(4, 50px);
+        grid-template-columns: repeat(4, 52px); grid-template-rows: repeat(4, 52px);
+        gap: 4px; padding: 4px;
       }
-      .tile-2048 { width: 50px; height: 50px; font-size: 16px; }
+      .tile-cell { width: 52px; height: 52px; font-size: 17px; }
       .tile-128, .tile-256, .tile-512 { font-size: 14px; }
       .tile-1024, .tile-2048 { font-size: 11px; }
       #gomokuBoard th { width: 18px; height: 16px; font-size: 7px; }
@@ -483,10 +501,26 @@
 </head>
 <body>
   <div id="login">
-    <h1>사용자 이름을 입력하세요:</h1>
-    <div style="display:flex;">
-      <input type="text" id="nickname" placeholder="이름" maxlength="12" autofocus>
-      <button onclick="join()">확인</button>
+    <h1>입장 정보를 입력하세요:</h1>
+    <div class="login-row">
+      <label>이름</label>
+      <input type="text" id="nickname" placeholder="닉네임" maxlength="12" autofocus>
+    </div>
+    <div class="login-row">
+      <label>방</label>
+      <select id="roomSelect">
+        <option value="ROOM1">ROOM1</option>
+        <option value="ROOM2">ROOM2</option>
+        <option value="VIP">VIP</option>
+      </select>
+    </div>
+    <div class="login-row">
+      <label>코드</label>
+      <input type="password" id="roomCode" placeholder="입장 코드" maxlength="8">
+    </div>
+    <div class="login-error" id="loginError">입장 코드가 틀렸습니다.</div>
+    <div class="login-row">
+      <button onclick="join()">입장</button>
     </div>
   </div>
 
@@ -539,20 +573,9 @@
       <!-- 2048 모드 -->
       <div id="game2048Mode">
         <div id="game2048Info">
-          <span>내 점수: <b id="score2048">0</b></span>
-          <span>|</span>
-          <span>상대: <b id="opponent2048Name">-</b> <b id="opponent2048Score">0</b>점</span>
+          <span>SCORE: <b id="score2048">0</b></span>
         </div>
-        <div style="display:flex; gap:24px; align-items:flex-start;">
-          <div>
-            <div style="font-size:10px;color:#888;text-align:center;margin-bottom:4px;">나</div>
-            <div id="game2048Board"></div>
-          </div>
-          <div id="opponent2048Wrap" style="display:none;">
-            <div style="font-size:10px;color:#888;text-align:center;margin-bottom:4px;" id="opponent2048Label">상대</div>
-            <div id="opponent2048Board" style="transform:scale(0.65);transform-origin:top left;"></div>
-          </div>
-        </div>
+        <div id="game2048Board"></div>
         <div id="game2048Controls">
           <button onclick="reset2048()">새 게임 (N)</button>
         </div>
@@ -635,15 +658,15 @@
           <div id="drawGuesses"></div>
         </div>
       </div>
-      <!-- 색깔 찾기 -->
+      <!-- 색깔 찾기 (1~5인) -->
       <div id="colorMode">
         <div id="colorInfo">
           <span>레벨: <b id="colorLevel">1</b></span>
-          <span>나: <b id="colorMyScore">0</b> | 상대: <b id="colorOpScore">0</b></span>
           <span id="colorResult"></span>
         </div>
+        <div id="colorScoreboard" style="font-size:11px;color:#444;margin-bottom:4px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;"></div>
         <div id="colorGrid"></div>
-        <button onclick="colorNewRound(true)" style="padding:4px 20px;font-size:12px;background:#217346;color:#fff;border:1px solid #165a32;cursor:pointer;margin-top:8px;">새 게임</button>
+        <button onclick="colorNewRound(true)" style="padding:4px 20px;font-size:12px;background:#217346;color:#fff;border:1px solid #165a32;cursor:pointer;margin-top:8px;">새 라운드</button>
       </div>
       <!-- 오목 모드 -->
       <div id="gomokuMode">
@@ -702,7 +725,7 @@
           <tr><td>Ctrl + ,</td><td>타자 레이싱 (2인 대전)</td></tr>
           <tr><td>Ctrl + .</td><td>반응속도 배틀 (2인 대전)</td></tr>
           <tr><td>Ctrl + /</td><td>그림 퀴즈 (그리기+맞추기)</td></tr>
-          <tr><td>Ctrl + '</td><td>색깔 다른거 찾기 (2인)</td></tr>
+          <tr><td>Ctrl + '</td><td>색깔 다른거 찾기 (1~5인)</td></tr>
           <tr class="section-gap"><th colspan="2">채팅 모드</th></tr>
           <tr><td>Enter</td><td>메시지 전송</td></tr>
           <tr><td>E2E 암호화</td><td>자동 (ECDH + AES-256-GCM)</td></tr>
@@ -857,8 +880,10 @@
     }
 
     // ========== 채팅 ==========
+    const ROOM_CODES = { ROOM1: '1128', ROOM2: '1128', VIP: '1101' };
     const socket = io();
     let myNick = '';
+    let myRoom = '';
     let chatRowNum = 0;
     let isExcelMode = false;
     let isGomokuMode = false;
@@ -892,13 +917,23 @@
     initCrypto().then(() => { cryptoReady = true; console.log('[E2E] 암호화 준비 완료'); });
 
     $nickname.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) join(); });
+    $('roomCode').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) join(); });
     $msgInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) sendMsg(); });
 
     async function join() {
       const nick = $nickname.value.trim();
       if (!nick) return;
+      const room = $('roomSelect').value;
+      const code = $('roomCode').value.trim();
+      if (ROOM_CODES[room] !== code) {
+        $('loginError').style.display = 'block';
+        $('roomCode').focus();
+        return;
+      }
+      $('loginError').style.display = 'none';
       myNick = nick;
-      socket.emit('join', myNick);
+      myRoom = room;
+      socket.emit('join', { nickname: myNick, room: myRoom });
 
       // E2E 가능하면 공개키 배포
       if (e2eAvailable && myKeyPair) {
@@ -1529,11 +1564,12 @@
     let board2048 = [];
     let score2048 = 0;
     let game2048Over = false;
-    let opponent2048Score = 0;
-    let opponent2048Board = [];
 
     function init2048() {
       board2048 = Array.from({ length: 4 }, () => Array(4).fill(0));
+      prev2048 = Array.from({ length: 4 }, () => Array(4).fill(0));
+      merged2048 = new Set();
+      newTile2048 = null;
       score2048 = 0;
       game2048Over = false;
       add2048Tile();
@@ -1553,35 +1589,43 @@
       if (empty.length === 0) return;
       const [r, c] = empty[Math.floor(Math.random() * empty.length)];
       board2048[r][c] = Math.random() < 0.9 ? 2 : 4;
+      newTile2048 = [r, c];
     }
 
-    function render2048Board(board, targetId) {
-      const $board = $(targetId);
+    let prev2048 = Array.from({ length: 4 }, () => Array(4).fill(0));
+    let merged2048 = new Set();
+    let newTile2048 = null;
+
+    function render2048() {
+      const $board = $('game2048Board');
       $board.innerHTML = '';
       for (let r = 0; r < 4; r++) {
         for (let c = 0; c < 4; c++) {
-          const v = board[r][c];
-          const cls = v <= 2048 ? `tile-${v}` : 'tile-super';
+          const v = board2048[r][c];
+          const cls = v === 0 ? 'tile-0' : (v <= 2048 ? `tile-${v}` : 'tile-super');
           const div = document.createElement('div');
-          div.className = `tile-2048 ${cls}`;
+          div.className = `tile-cell ${cls}`;
+          if (v !== 0) {
+            const key = `${r},${c}`;
+            if (newTile2048 && newTile2048[0] === r && newTile2048[1] === c) {
+              div.classList.add('tile-new');
+            } else if (merged2048.has(key)) {
+              div.classList.add('tile-merged');
+            }
+          }
           div.textContent = v || '';
           $board.appendChild(div);
         }
       }
-    }
-
-    function render2048() {
-      render2048Board(board2048, 'game2048Board');
       $('score2048').textContent = score2048;
-      $('opponent2048Score').textContent = opponent2048Score;
-      $statusRight.textContent = `나: ${score2048} | 상대: ${opponent2048Score}`;
+      $statusRight.textContent = `점수: ${score2048}`;
     }
 
     function sync2048() {
       socket.emit('2048:update', { board: board2048, score: score2048, gameOver: game2048Over });
     }
 
-    function slide2048(row) {
+    function slide2048(row, mergedIndices) {
       let arr = row.filter(v => v !== 0);
       const result = [];
       let i = 0;
@@ -1589,6 +1633,7 @@
         if (i + 1 < arr.length && arr[i] === arr[i + 1]) {
           const merged = arr[i] * 2;
           result.push(merged);
+          if (mergedIndices) mergedIndices.push(result.length - 1);
           score2048 += merged;
           i += 2;
         } else {
@@ -1602,22 +1647,38 @@
 
     function move2048(dir) {
       if (game2048Over) return;
+      prev2048 = board2048.map(r => [...r]);
+      merged2048 = new Set();
+      newTile2048 = null;
       const prev = JSON.stringify(board2048);
+
       if (dir === 'left') {
-        for (let r = 0; r < 4; r++) board2048[r] = slide2048(board2048[r]);
+        for (let r = 0; r < 4; r++) {
+          const mi = [];
+          board2048[r] = slide2048(board2048[r], mi);
+          mi.forEach(c => merged2048.add(`${r},${c}`));
+        }
       } else if (dir === 'right') {
-        for (let r = 0; r < 4; r++) board2048[r] = slide2048(board2048[r].slice().reverse()).reverse();
+        for (let r = 0; r < 4; r++) {
+          const mi = [];
+          board2048[r] = slide2048(board2048[r].slice().reverse(), mi).reverse();
+          mi.forEach(c => merged2048.add(`${r},${3 - c}`));
+        }
       } else if (dir === 'up') {
         for (let c = 0; c < 4; c++) {
           const col = [board2048[0][c], board2048[1][c], board2048[2][c], board2048[3][c]];
-          const slid = slide2048(col);
+          const mi = [];
+          const slid = slide2048(col, mi);
           for (let r = 0; r < 4; r++) board2048[r][c] = slid[r];
+          mi.forEach(r => merged2048.add(`${r},${c}`));
         }
       } else if (dir === 'down') {
         for (let c = 0; c < 4; c++) {
           const col = [board2048[3][c], board2048[2][c], board2048[1][c], board2048[0][c]];
-          const slid = slide2048(col);
+          const mi = [];
+          const slid = slide2048(col, mi);
           for (let r = 0; r < 4; r++) board2048[3 - r][c] = slid[r];
+          mi.forEach(r => merged2048.add(`${3 - r},${c}`));
         }
       }
       if (JSON.stringify(board2048) !== prev) {
@@ -1641,22 +1702,8 @@
       return true;
     }
 
-    // 상대 2048 수신
-    socket.on('2048:update', (data) => {
-      opponent2048Score = data.score;
-      opponent2048Board = data.board;
-      $('opponent2048Name').textContent = data.nickname;
-      $('opponent2048Label').textContent = data.nickname;
-      $('opponent2048Score').textContent = data.score;
-      $('opponent2048Wrap').style.display = 'block';
-      render2048Board(data.board, 'opponent2048Board');
-      if (is2048Mode) $statusRight.textContent = `나: ${score2048} | ${data.nickname}: ${data.score}`;
-    });
-
-    socket.on('2048:reset', () => {
-      opponent2048Score = 0;
-      init2048();
-    });
+    socket.on('2048:update', () => {});
+    socket.on('2048:reset', () => { init2048(); });
 
     init2048();
 
@@ -2122,7 +2169,7 @@
         $statusLeft.textContent = '셀 서식 비교 중...';
         showIndicator('🎯 색깔 찾기');
         showTab('tabColor');
-        if (colorLevel === 1 && colorMyScore === 0) colorNewRound(true);
+        if (colorLevel === 1 && !colorScores[myNick]) colorNewRound(true);
       } else { showChatMode(); showIndicator('💬 채팅 모드'); }
     }
 
@@ -2776,35 +2823,28 @@
       }
     });
 
-    // ========== 색깔 찾기 ==========
+    // ========== 색깔 찾기 (1~5인, Ready 없이 중간개입 가능) ==========
     let colorLevel = 1;
-    let colorMyScore = 0, colorOpScore = 0;
+    let colorScores = {}; // nickname → score
     let colorAnswerR = -1, colorAnswerC = -1;
     let colorRoundActive = false;
 
-    function colorNewRound(emit) {
+    function colorUpdateScoreboard() {
+      const sb = $('colorScoreboard');
+      const entries = Object.entries(colorScores).sort((a, b) => b[1] - a[1]);
+      sb.innerHTML = entries.map(([nick, score]) =>
+        `<span style="padding:2px 8px;background:${nick === myNick ? '#e8f5e9' : '#f5f5f5'};border-radius:3px;border:1px solid #ddd;"><b>${esc(nick)}</b>: ${score}점</span>`
+      ).join('');
+      $statusRight.textContent = `레벨: ${colorLevel} | ` + entries.map(([n, s]) => `${n} ${s}`).join(' / ');
+    }
+
+    function colorBuildGrid(gridSize, r, g, b, dr, dg, ansR, ansC) {
       colorRoundActive = true;
       $('colorResult').textContent = '';
-
-      // 레벨에 따라 그리드 크기와 색차 조정
-      const gridSize = Math.min(2 + colorLevel, 10);
-      const diff = Math.max(50 - colorLevel * 4, 8);
-
-      // 랜덤 베이스 컬러
-      const r = 30 + Math.floor(Math.random() * 180);
-      const g = 30 + Math.floor(Math.random() * 180);
-      const b = 30 + Math.floor(Math.random() * 180);
-
-      // 다른 셀 위치
-      colorAnswerR = Math.floor(Math.random() * gridSize);
-      colorAnswerC = Math.floor(Math.random() * gridSize);
-
-      // 다른 색
-      const dr = (Math.random() > 0.5 ? diff : -diff);
-      const dg = (Math.random() > 0.5 ? diff : -diff);
+      colorAnswerR = ansR;
+      colorAnswerC = ansC;
 
       const cellSize = Math.max(30, Math.floor(280 / gridSize));
-
       const grid = $('colorGrid');
       grid.style.gridTemplateColumns = `repeat(${gridSize}, ${cellSize}px)`;
       grid.innerHTML = '';
@@ -2816,7 +2856,7 @@
           div.style.width = cellSize + 'px';
           div.style.height = cellSize + 'px';
 
-          if (row === colorAnswerR && col === colorAnswerC) {
+          if (row === ansR && col === ansC) {
             div.style.background = `rgb(${clamp(r+dr)},${clamp(g+dg)},${b})`;
           } else {
             div.style.background = `rgb(${r},${g},${b})`;
@@ -2824,15 +2864,15 @@
 
           div.addEventListener('click', () => {
             if (!colorRoundActive) return;
-            if (row === colorAnswerR && col === colorAnswerC) {
+            if (row === ansR && col === ansC) {
               colorRoundActive = false;
-              colorMyScore++;
+              colorScores[myNick] = (colorScores[myNick] || 0) + 1;
               colorLevel++;
-              $('colorMyScore').textContent = colorMyScore;
               $('colorLevel').textContent = colorLevel;
-              $('colorResult').textContent = '정답!';
+              $('colorResult').textContent = '정답! 내가 찾았다!';
               $('colorResult').style.color = '#217346';
               div.style.border = '3px solid #217346';
+              colorUpdateScoreboard();
               socket.emit('color:found', { level: colorLevel });
               setTimeout(() => colorNewRound(true), 1000);
             } else {
@@ -2846,14 +2886,24 @@
       }
 
       $('colorLevel').textContent = colorLevel;
-      $('colorMyScore').textContent = colorMyScore;
-      $('colorOpScore').textContent = colorOpScore;
-      $statusRight.textContent = `레벨: ${colorLevel} | 나 ${colorMyScore} : ${colorOpScore} 상대`;
+      colorUpdateScoreboard();
+    }
+
+    function colorNewRound(emit) {
+      const gridSize = Math.min(2 + colorLevel, 10);
+      const diff = Math.max(50 - colorLevel * 4, 8);
+      const r = 30 + Math.floor(Math.random() * 180);
+      const g = 30 + Math.floor(Math.random() * 180);
+      const b = 30 + Math.floor(Math.random() * 180);
+      const ansR = Math.floor(Math.random() * gridSize);
+      const ansC = Math.floor(Math.random() * gridSize);
+      const dr = (Math.random() > 0.5 ? diff : -diff);
+      const dg = (Math.random() > 0.5 ? diff : -diff);
+
+      colorBuildGrid(gridSize, r, g, b, dr, dg, ansR, ansC);
 
       if (emit) {
-        socket.emit('color:start', {
-          gridSize, r, g, b, dr, dg, ansR: colorAnswerR, ansC: colorAnswerC, level: colorLevel
-        });
+        socket.emit('color:start', { gridSize, r, g, b, dr, dg, ansR, ansC, level: colorLevel });
       }
     }
 
@@ -2861,58 +2911,12 @@
 
     socket.on('color:start', (data) => {
       colorLevel = data.level;
-      colorRoundActive = true;
-      colorAnswerR = data.ansR;
-      colorAnswerC = data.ansC;
-      $('colorResult').textContent = '';
-
-      const cellSize = Math.max(30, Math.floor(280 / data.gridSize));
-      const grid = $('colorGrid');
-      grid.style.gridTemplateColumns = `repeat(${data.gridSize}, ${cellSize}px)`;
-      grid.innerHTML = '';
-
-      for (let row = 0; row < data.gridSize; row++) {
-        for (let col = 0; col < data.gridSize; col++) {
-          const div = document.createElement('div');
-          div.className = 'color-cell';
-          div.style.width = cellSize + 'px';
-          div.style.height = cellSize + 'px';
-
-          if (row === data.ansR && col === data.ansC) {
-            div.style.background = `rgb(${clamp(data.r+data.dr)},${clamp(data.g+data.dg)},${data.b})`;
-          } else {
-            div.style.background = `rgb(${data.r},${data.g},${data.b})`;
-          }
-
-          div.addEventListener('click', () => {
-            if (!colorRoundActive) return;
-            if (row === data.ansR && col === data.ansC) {
-              colorRoundActive = false;
-              colorMyScore++;
-              colorLevel++;
-              $('colorMyScore').textContent = colorMyScore;
-              $('colorLevel').textContent = colorLevel;
-              $('colorResult').textContent = '정답!';
-              $('colorResult').style.color = '#217346';
-              div.style.border = '3px solid #217346';
-              socket.emit('color:found', { level: colorLevel });
-              setTimeout(() => colorNewRound(true), 1000);
-            } else {
-              div.style.border = '3px solid #e74c3c';
-              setTimeout(() => { div.style.border = 'none'; }, 300);
-            }
-          });
-
-          grid.appendChild(div);
-        }
-      }
-
-      $('colorLevel').textContent = colorLevel;
+      colorBuildGrid(data.gridSize, data.r, data.g, data.b, data.dr, data.dg, data.ansR, data.ansC);
     });
 
     socket.on('color:found', (data) => {
-      colorOpScore++;
-      $('colorOpScore').textContent = colorOpScore;
+      colorScores[data.nickname] = (colorScores[data.nickname] || 0) + 1;
+      colorUpdateScoreboard();
       $('colorResult').textContent = `${data.nickname}님이 먼저 찾음!`;
       $('colorResult').style.color = '#e74c3c';
       colorRoundActive = false;
