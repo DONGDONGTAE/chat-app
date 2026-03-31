@@ -12,6 +12,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const users = new Map();
 const drawPlayers = new Map();  // socketId → { nickname, ready }
 let drawCountdownTimer = null;
+const drawRoundAnswered = new Map();  // room → boolean (라운드당 정답 1회만 허용)
 
 io.on('connection', (socket) => {
   console.log(`접속: ${socket.id}`);
@@ -152,6 +153,7 @@ io.on('connection', (socket) => {
         drawCountdownTimer = null;
         const ids = players.map(([id]) => id);
         const drawerId = ids[Math.floor(Math.random() * ids.length)];
+        drawRoundAnswered.set(room, false);
         io.to(room).emit('draw:assign', { drawerId });
         for (const [, p] of players) p.ready = false;
       } else {
@@ -170,11 +172,23 @@ io.on('connection', (socket) => {
 
   socket.on('draw:stroke', (data) => { const room = getRoom(); if (room) socket.to(room).emit('draw:stroke', data); });
   socket.on('draw:clear', () => { const room = getRoom(); if (room) socket.to(room).emit('draw:clear'); });
-  socket.on('draw:word', (data) => { const room = getRoom(); if (room) socket.to(room).emit('draw:word', data); });
+  socket.on('draw:word', (data) => {
+    const room = getRoom();
+    if (!room) return;
+    drawRoundAnswered.set(room, false);  // 새 라운드 시작 — 정답 플래그 리셋
+    socket.to(room).emit('draw:word', data);
+  });
   socket.on('draw:guess', (data) => {
     const room = getRoom(); if (room) io.to(room).emit('draw:guess', { ...data, nickname: getNick() });
   });
-  socket.on('draw:correct', (data) => { const room = getRoom(); if (room) io.to(room).emit('draw:correct', data); });
+  socket.on('draw:correct', (data) => {
+    const room = getRoom();
+    if (!room) return;
+    // 라운드당 정답 1회만 허용 — 동시 정답 방지
+    if (drawRoundAnswered.get(room)) return;
+    drawRoundAnswered.set(room, true);
+    io.to(room).emit('draw:correct', data);
+  });
 
   // ===== 색깔 찾기 (1~5인) =====
   socket.on('color:start', (data) => { const room = getRoom(); if (room) io.to(room).emit('color:start', data); });
