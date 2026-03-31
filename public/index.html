@@ -721,7 +721,7 @@
           <tr><td>Ctrl + M</td><td>이 매뉴얼 열기/닫기</td></tr>
           <tr><td>Ctrl + K</td><td>Excel 모드 (스프레드시트)</td></tr>
           <tr><td>Ctrl + E</td><td>오목 모드 (1:1 대전)</td></tr>
-          <tr><td>Ctrl + G</td><td>2048 모드 (2인 대전)</td></tr>
+          <tr><td>Ctrl + G</td><td>2048 모드 (1인)</td></tr>
           <tr><td>Ctrl + ;</td><td>지뢰찾기 모드 (2인 턴제)</td></tr>
           <tr><td>Ctrl + ,</td><td>타자 레이싱 (2인 대전)</td></tr>
           <tr><td>Ctrl + .</td><td>반응속도 배틀 (2인 대전)</td></tr>
@@ -741,7 +741,7 @@
           <tr><td>클릭</td><td>돌 놓기</td></tr>
           <tr><td>새 게임</td><td>보드 초기화</td></tr>
           <tr><td>무르기</td><td>2수 되돌리기</td></tr>
-          <tr class="section-gap"><th colspan="2">2048 모드 (2인 대전)</th></tr>
+          <tr class="section-gap"><th colspan="2">2048 모드 (1인)</th></tr>
           <tr><td>방향키</td><td>타일 이동</td></tr>
           <tr><td>N</td><td>새 게임</td></tr>
           <tr><td>상대 보드</td><td>실시간 점수 표시</td></tr>
@@ -3719,6 +3719,7 @@
         drawNewRound();
       } else {
         drawAmDrawer = false;
+        drawRoundAnswered = false;
         drawCurrentWord = '';
         $('drawWord').style.display = 'none';
         $('drawHint').textContent = '상대방이 그림을 준비 중...';
@@ -3745,6 +3746,7 @@
 
     socket.on('draw:word', (data) => {
       drawAmDrawer = false;
+      drawRoundAnswered = false;
       drawCurrentWord = data.hint.replace(/ /g, '').length ? '' : '';
       drawClear(false);
       $('drawWord').style.display = 'none';
