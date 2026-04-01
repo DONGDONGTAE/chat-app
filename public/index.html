@@ -728,7 +728,7 @@
           <tr><td>Esc</td><td>채팅 모드로 복귀</td></tr>
           <tr><td>Ctrl + M</td><td>이 매뉴얼 열기/닫기</td></tr>
           <tr><td>Ctrl + K</td><td>Excel 모드 (스프레드시트)</td></tr>
-          <tr><td>Ctrl + E</td><td>오목 모드 (1:1 대전)</td></tr>
+          <tr><td>Ctrl + E</td><td>오목 모드 (AI 대전)</td></tr>
           <tr><td>Ctrl + G</td><td>2048 모드 (1인)</td></tr>
           <tr><td>Ctrl + ;</td><td>지뢰찾기 모드 (2인 턴제)</td></tr>
           <tr><td>Ctrl + ,</td><td>타자 레이싱 (2인 대전)</td></tr>
@@ -749,6 +749,7 @@
           <tr><td>클릭</td><td>돌 놓기</td></tr>
           <tr><td>새 게임</td><td>보드 초기화</td></tr>
           <tr><td>무르기</td><td>2수 되돌리기</td></tr>
+          <tr><td>AI</td><td>고난도 AI (백) vs 플레이어 (흑)</td></tr>
           <tr class="section-gap"><th colspan="2">2048 모드 (1인)</th></tr>
           <tr><td>방향키</td><td>타일 이동</td></tr>
           <tr><td>N</td><td>새 게임</td></tr>
@@ -1356,6 +1357,7 @@
     let gomokuHistory = [];
     let gomokuScoreBlack = 0;
     let gomokuScoreWhite = 0;
+    let gomokuAiThinking = false; // AI 계산 중
 
     const $gomokuMode = $('gomokuMode');
     const $gomokuBoard = $('gomokuBoard');
@@ -1368,7 +1370,8 @@
       gomokuTurnBlack = true;
       gomokuGameOver = false;
       gomokuHistory = [];
-      gomokuMyColor = null;
+      gomokuMyColor = 'black';
+      gomokuAiThinking = false;
       $gomokuWinOverlay.style.display = 'none';
       gomokuRenderBoard();
       gomokuUpdateInfo();
@@ -1422,59 +1425,318 @@
     function gomokuPlace(r, c, isLocal) {
       if (gomokuGameOver) return;
       if (gomokuBoard[r][c] !== 0) return;
+      if (gomokuAiThinking) return;
 
-      // 첫 수를 둔 사람이 흑
-      if (isLocal && gomokuMyColor === null) {
-        gomokuMyColor = gomokuTurnBlack ? 'black' : 'white';
-      }
-
-      // 내 턴인지 확인 (로컬에서 둘 때만)
-      if (isLocal) {
-        const myTurn = (gomokuMyColor === 'black' && gomokuTurnBlack) || (gomokuMyColor === 'white' && !gomokuTurnBlack);
-        if (!myTurn && gomokuMyColor !== null) return;
-      }
+      // 플레이어는 항상 흑, AI 턴에는 클릭 무시
+      if (isLocal && !gomokuTurnBlack) return;
 
       const color = gomokuTurnBlack ? 1 : 2;
       gomokuBoard[r][c] = color;
       gomokuHistory.push({ r, c, color });
       gomokuTurnBlack = !gomokuTurnBlack;
 
-      // 네트워크 전송
-      if (isLocal) {
-        socket.emit('gomoku:place', { r, c, color });
-      }
 
       // 승리 체크
       if (gomokuCheckWin(r, c, color)) {
         gomokuGameOver = true;
-        const winner = color === 1 ? '흑' : '백';
         if (color === 1) gomokuScoreBlack++; else gomokuScoreWhite++;
-        $gomokuWinOverlay.textContent = `${winner} 승리!`;
+        $gomokuWinOverlay.textContent = color === 1 ? '🎉 당신의 승리!' : '🤖 AI 승리!';
         $gomokuWinOverlay.style.display = 'block';
         setTimeout(() => { $gomokuWinOverlay.style.display = 'none'; }, 3000);
       }
 
       gomokuRenderBoard();
       gomokuUpdateInfo();
+
+      // AI 턴 트리거
+      if (!gomokuGameOver && !gomokuTurnBlack) {
+        gomokuAiThinking = true;
+        gomokuUpdateInfo();
+        setTimeout(() => {
+          const move = gomokuAiFindMove();
+          gomokuAiThinking = false;
+          if (move) gomokuPlace(move.r, move.c, false);
+        }, 150);
+      }
     }
 
-    function gomokuCheckWin(r, c, color) {
+    // ===== 고강도 오목 AI =====
+    // 패턴 점수: 위협 기반 평가
+    // five=즉시승, open4=막을수없음, half4=한쪽만열림, open3=양쪽열림, etc.
+    const AI_SCORES = {
+      FIVE: 10000000,
+      OPEN_FOUR: 1000000,
+      HALF_FOUR: 100000,
+      OPEN_THREE: 50000,
+      HALF_THREE: 1000,
+      OPEN_TWO: 500,
+      HALF_TWO: 100,
+      CENTER_BONUS: 3
+    };
+
+    // 한 방향으로 연속 돌 + 양쪽 열림 분석
+    function gomokuAnalyzeLine(board, r, c, dr, dc, color) {
+      const S = GOMOKU_SIZE;
+      let count = 1;
+      let openEnds = 0;
+      // 정방향
+      let i = 1;
+      while (i < 5) {
+        const nr = r + dr * i, nc = c + dc * i;
+        if (nr < 0 || nr >= S || nc < 0 || nc >= S) break;
+        if (board[nr][nc] === color) { count++; i++; }
+        else break;
+      }
+      {
+        const nr = r + dr * i, nc = c + dc * i;
+        if (nr >= 0 && nr < S && nc >= 0 && nc < S && board[nr][nc] === 0) openEnds++;
+      }
+      // 역방향
+      let j = 1;
+      while (j < 5) {
+        const nr = r - dr * j, nc = c - dc * j;
+        if (nr < 0 || nr >= S || nc < 0 || nc >= S) break;
+        if (board[nr][nc] === color) { count++; j++; }
+        else break;
+      }
+      {
+        const nr = r - dr * j, nc = c - dc * j;
+        if (nr >= 0 && nr < S && nc >= 0 && nc < S && board[nr][nc] === 0) openEnds++;
+      }
+      return { count, openEnds };
+    }
+
+    // 한 칸에 돌을 놓았을 때 그 돌의 패턴 점수
+    function gomokuScorePosition(board, r, c, color) {
       const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+      let total = 0;
+      for (const [dr, dc] of dirs) {
+        const { count, openEnds } = gomokuAnalyzeLine(board, r, c, dr, dc, color);
+        if (count >= 5) total += AI_SCORES.FIVE;
+        else if (count === 4) {
+          if (openEnds === 2) total += AI_SCORES.OPEN_FOUR;
+          else if (openEnds === 1) total += AI_SCORES.HALF_FOUR;
+        } else if (count === 3) {
+          if (openEnds === 2) total += AI_SCORES.OPEN_THREE;
+          else if (openEnds === 1) total += AI_SCORES.HALF_THREE;
+        } else if (count === 2) {
+          if (openEnds === 2) total += AI_SCORES.OPEN_TWO;
+          else if (openEnds === 1) total += AI_SCORES.HALF_TWO;
+        }
+      }
+      // 중앙 보너스
+      const center = Math.floor(GOMOKU_SIZE / 2);
+      const dist = Math.abs(r - center) + Math.abs(c - center);
+      total += Math.max(0, (GOMOKU_SIZE - dist)) * AI_SCORES.CENTER_BONUS;
+      return total;
+    }
+
+    // 갭(빈칸 1개 사이)이 있는 패턴도 탐지 (예: OO_OO, OOO_O)
+    function gomokuScoreGapPattern(board, r, c, color) {
+      const S = GOMOKU_SIZE;
+      const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+      let total = 0;
+      for (const [dr, dc] of dirs) {
+        // 정방향 갭 탐지: 현재 위치에서 연속 후 빈칸1 후 연속
+        for (const sign of [1, -1]) {
+          let seq1 = 0;
+          let i = 1;
+          while (i < 5) {
+            const nr = r + sign * dr * i, nc = c + sign * dc * i;
+            if (nr < 0 || nr >= S || nc < 0 || nc >= S || board[nr][nc] !== color) break;
+            seq1++; i++;
+          }
+          // 빈칸 체크
+          const gr = r + sign * dr * i, gc = c + sign * dc * i;
+          if (gr >= 0 && gr < S && gc >= 0 && gc < S && board[gr][gc] === 0) {
+            let seq2 = 0;
+            let k = i + 1;
+            while (k < 6) {
+              const nr = r + sign * dr * k, nc = c + sign * dc * k;
+              if (nr < 0 || nr >= S || nc < 0 || nc >= S || board[nr][nc] !== color) break;
+              seq2++; k++;
+            }
+            const combined = 1 + seq1 + seq2; // 현재돌 + 양쪽 연속
+            if (combined >= 5) total += AI_SCORES.HALF_FOUR * 2; // 갭 있는 4 = 매우 위험
+            else if (combined === 4) total += AI_SCORES.OPEN_THREE;
+          }
+        }
+      }
+      return total;
+    }
+
+    // 전체 보드 평가 (AI 관점, AI=백=2)
+    function gomokuEvaluateBoard(board) {
+      let score = 0;
+      const aiColor = 2, humanColor = 1;
+      for (let r = 0; r < GOMOKU_SIZE; r++) {
+        for (let c = 0; c < GOMOKU_SIZE; c++) {
+          if (board[r][c] === aiColor) {
+            score += gomokuScorePosition(board, r, c, aiColor);
+            score += gomokuScoreGapPattern(board, r, c, aiColor);
+          } else if (board[r][c] === humanColor) {
+            score -= gomokuScorePosition(board, r, c, humanColor) * 1.1; // 방어 가중치
+            score -= gomokuScoreGapPattern(board, r, c, humanColor) * 1.1;
+          }
+        }
+      }
+      return score;
+    }
+
+    // 돌 주변 빈칸 후보 수집 (범위 2칸)
+    function gomokuGetCandidates(board) {
+      const S = GOMOKU_SIZE;
+      const set = new Set();
+      for (let r = 0; r < S; r++) {
+        for (let c = 0; c < S; c++) {
+          if (board[r][c] !== 0) {
+            for (let dr = -2; dr <= 2; dr++) {
+              for (let dc = -2; dc <= 2; dc++) {
+                const nr = r + dr, nc = c + dc;
+                if (nr >= 0 && nr < S && nc >= 0 && nc < S && board[nr][nc] === 0) {
+                  set.add(nr * S + nc);
+                }
+              }
+            }
+          }
+        }
+      }
+      if (set.size === 0) {
+        const mid = Math.floor(S / 2);
+        set.add(mid * S + mid);
+      }
+      return Array.from(set).map(v => ({ r: Math.floor(v / S), c: v % S }));
+    }
+
+    // 즉시승/즉시방어 체크
+    function gomokuFindImmediate(board, color) {
+      const candidates = gomokuGetCandidates(board);
+      for (const { r, c } of candidates) {
+        board[r][c] = color;
+        if (gomokuCheckWinBoard(board, r, c, color)) {
+          board[r][c] = 0;
+          return { r, c };
+        }
+        board[r][c] = 0;
+      }
+      return null;
+    }
+
+    function gomokuCheckWinBoard(board, r, c, color) {
+      const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+      const S = GOMOKU_SIZE;
       for (const [dr, dc] of dirs) {
         let count = 1;
         for (let i = 1; i < 5; i++) {
           const nr = r + dr * i, nc = c + dc * i;
-          if (nr < 0 || nr >= GOMOKU_SIZE || nc < 0 || nc >= GOMOKU_SIZE || gomokuBoard[nr][nc] !== color) break;
+          if (nr < 0 || nr >= S || nc < 0 || nc >= S || board[nr][nc] !== color) break;
           count++;
         }
         for (let i = 1; i < 5; i++) {
           const nr = r - dr * i, nc = c - dc * i;
-          if (nr < 0 || nr >= GOMOKU_SIZE || nc < 0 || nc >= GOMOKU_SIZE || gomokuBoard[nr][nc] !== color) break;
+          if (nr < 0 || nr >= S || nc < 0 || nc >= S || board[nr][nc] !== color) break;
           count++;
         }
         if (count >= 5) return true;
       }
       return false;
+    }
+
+    // 후보 점수 매기기 + 정렬 (move ordering)
+    function gomokuScoreCandidates(board, candidates, aiColor, humanColor) {
+      return candidates.map(({ r, c }) => {
+        board[r][c] = aiColor;
+        let s = gomokuScorePosition(board, r, c, aiColor) + gomokuScoreGapPattern(board, r, c, aiColor);
+        board[r][c] = humanColor;
+        s += gomokuScorePosition(board, r, c, humanColor) + gomokuScoreGapPattern(board, r, c, humanColor);
+        board[r][c] = 0;
+        return { r, c, score: s };
+      }).sort((a, b) => b.score - a.score);
+    }
+
+    // Minimax + Alpha-Beta (깊이 4)
+    function gomokuMinimax(board, depth, alpha, beta, isMax, aiColor, humanColor) {
+      if (depth === 0) return gomokuEvaluateBoard(board);
+
+      let candidates = gomokuGetCandidates(board);
+      if (candidates.length === 0) return gomokuEvaluateBoard(board);
+
+      // 후보 정렬 + 상위 15개만
+      candidates = gomokuScoreCandidates(board, candidates, aiColor, humanColor);
+      const maxCands = depth >= 3 ? 12 : (depth >= 2 ? 15 : 20);
+      if (candidates.length > maxCands) candidates = candidates.slice(0, maxCands);
+
+      if (isMax) {
+        let maxEval = -Infinity;
+        for (const { r, c } of candidates) {
+          board[r][c] = aiColor;
+          if (gomokuCheckWinBoard(board, r, c, aiColor)) {
+            board[r][c] = 0;
+            return AI_SCORES.FIVE * (depth + 1);
+          }
+          const ev = gomokuMinimax(board, depth - 1, alpha, beta, false, aiColor, humanColor);
+          board[r][c] = 0;
+          maxEval = Math.max(maxEval, ev);
+          alpha = Math.max(alpha, ev);
+          if (beta <= alpha) break;
+        }
+        return maxEval;
+      } else {
+        let minEval = Infinity;
+        for (const { r, c } of candidates) {
+          board[r][c] = humanColor;
+          if (gomokuCheckWinBoard(board, r, c, humanColor)) {
+            board[r][c] = 0;
+            return -AI_SCORES.FIVE * (depth + 1);
+          }
+          const ev = gomokuMinimax(board, depth - 1, alpha, beta, true, aiColor, humanColor);
+          board[r][c] = 0;
+          minEval = Math.min(minEval, ev);
+          beta = Math.min(beta, ev);
+          if (beta <= alpha) break;
+        }
+        return minEval;
+      }
+    }
+
+    function gomokuAiFindMove() {
+      const aiColor = 2, humanColor = 1;
+      const board = gomokuBoard;
+
+      // 1. 즉시승 체크
+      const win = gomokuFindImmediate(board, aiColor);
+      if (win) return win;
+
+      // 2. 즉시방어 (상대 5 막기)
+      const block = gomokuFindImmediate(board, humanColor);
+      if (block) return block;
+
+      // 3. 쌍삼/쌍사 공격 or 방어 - 위협 탐지
+      const candidates = gomokuGetCandidates(board);
+      const scored = gomokuScoreCandidates(board, candidates, aiColor, humanColor);
+
+      // 4. 상위 후보에 대해 minimax 탐색 (깊이 4)
+      const topN = Math.min(scored.length, 15);
+      const topCandidates = scored.slice(0, topN);
+
+      let bestMove = topCandidates[0];
+      let bestScore = -Infinity;
+
+      for (const { r, c } of topCandidates) {
+        board[r][c] = aiColor;
+        const score = gomokuMinimax(board, 3, -Infinity, Infinity, false, aiColor, humanColor);
+        board[r][c] = 0;
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = { r, c };
+        }
+      }
+
+      return bestMove;
+    }
+
+    function gomokuCheckWin(r, c, color) {
+      return gomokuCheckWinBoard(gomokuBoard, r, c, color);
     }
 
     function gomokuGetWinCells(r, c, color) {
@@ -1499,66 +1761,39 @@
     function gomokuUpdateInfo() {
       if (gomokuGameOver) {
         $gomokuTurn.innerHTML = '게임 종료';
+      } else if (gomokuAiThinking) {
+        $gomokuTurn.innerHTML = '🤖 AI 생각 중...';
       } else {
         const turnStr = gomokuTurnBlack ? '흑' : '백';
         const stoneClass = gomokuTurnBlack ? 'stone-black' : 'stone-white';
-        const isMyTurn = gomokuMyColor === null ||
-          (gomokuMyColor === 'black' && gomokuTurnBlack) ||
-          (gomokuMyColor === 'white' && !gomokuTurnBlack);
-        $gomokuTurn.innerHTML = `<span class="stone-preview ${stoneClass}"></span>${turnStr} 차례${isMyTurn ? ' (내 턴)' : ' (상대 턴)'}`;
+        const label = gomokuTurnBlack ? '(내 턴)' : '(AI 턴)';
+        $gomokuTurn.innerHTML = `<span class="stone-preview ${stoneClass}"></span>${turnStr} 차례 ${label}`;
       }
       $gomokuScore.textContent = `흑 ${gomokuScoreBlack} : ${gomokuScoreWhite} 백`;
       $statusRight.textContent = `흑 ${gomokuScoreBlack} : ${gomokuScoreWhite} 백`;
     }
 
     function gomokuReset() {
-      socket.emit('gomoku:reset');
       gomokuInit();
     }
 
     function gomokuUndo() {
       if (gomokuHistory.length === 0 || gomokuGameOver) return;
-      // 내 마지막 수를 되돌리기 (2수 되돌림 - 상대+나)
+      // 2수 되돌림 (AI수 + 내수)
       if (gomokuHistory.length >= 2) {
         const last2 = gomokuHistory.pop();
         const last1 = gomokuHistory.pop();
         gomokuBoard[last2.r][last2.c] = 0;
         gomokuBoard[last1.r][last1.c] = 0;
-        gomokuTurnBlack = last1.color === 1;
-        socket.emit('gomoku:place', { r: last2.r, c: last2.c, color: 0, undo: true });
-        socket.emit('gomoku:place', { r: last1.r, c: last1.c, color: 0, undo: true });
+        gomokuTurnBlack = true;
       } else if (gomokuHistory.length === 1) {
         const last = gomokuHistory.pop();
         gomokuBoard[last.r][last.c] = 0;
-        gomokuTurnBlack = last.color === 1;
-        socket.emit('gomoku:place', { r: last.r, c: last.c, color: 0, undo: true });
+        gomokuTurnBlack = true;
       }
       gomokuRenderBoard();
       gomokuUpdateInfo();
     }
-
-    // 네트워크 수신
-    socket.on('gomoku:place', (data) => {
-      if (data.undo) {
-        gomokuBoard[data.r][data.c] = 0;
-        gomokuHistory = gomokuHistory.filter(h => !(h.r === data.r && h.c === data.c));
-        // 턴 복원
-        let blackCount = 0, whiteCount = 0;
-        for (const h of gomokuHistory) { if (h.color === 1) blackCount++; else whiteCount++; }
-        gomokuTurnBlack = blackCount <= whiteCount;
-        gomokuRenderBoard();
-        gomokuUpdateInfo();
-        return;
-      }
-      if (gomokuMyColor === null) {
-        gomokuMyColor = data.color === 1 ? 'white' : 'black';
-      }
-      gomokuPlace(data.r, data.c, false);
-    });
-
-    socket.on('gomoku:reset', () => {
-      gomokuInit();
-    });
 
     // 초기화
     gomokuInit();
