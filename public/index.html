@@ -189,11 +189,25 @@
     #game2048Info { font-size: 13px; color: #444; display: flex; gap: 16px; align-items: center; }
     #game2048Info b { font-size: 18px; color: #217346; }
     #game2048Board {
-      display: grid; grid-template-columns: repeat(4, 72px); grid-template-rows: repeat(4, 72px);
-      gap: 6px; background: #7c7165; padding: 6px; border-radius: 10px;
+      --cell: 72px; --gap: 6px; --pad: 6px;
+      position: relative;
+      width: calc(var(--pad)*2 + var(--cell)*4 + var(--gap)*3);
+      height: calc(var(--pad)*2 + var(--cell)*4 + var(--gap)*3);
+      background: #7c7165; border-radius: 10px;
+    }
+    .bg2048 {
+      position: absolute; width: var(--cell); height: var(--cell);
+      border-radius: 6px; background: #a69888;
     }
     .tile-cell {
-      width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;
+      position: absolute; left: 0; top: 0;
+      width: var(--cell); height: var(--cell);
+      transition: transform 0.12s ease-in-out;
+      z-index: 1;
+    }
+    .tile-inner {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
       font-size: 24px; font-weight: 800; border-radius: 6px;
       font-family: 'Segoe UI', Calibri, sans-serif;
     }
@@ -221,8 +235,8 @@
       35% { transform: scale(1.3); }
       100% { transform: scale(1); }
     }
-    .tile-new { animation: tile-pop 0.15s ease-out; }
-    .tile-merged { animation: tile-merge 0.15s ease-out; }
+    .tile-new .tile-inner { animation: tile-pop 0.15s ease-out; }
+    .tile-merged .tile-inner { animation: tile-merge 0.2s ease-out; }
     #game2048Controls { display: flex; gap: 8px; }
     #game2048Controls button {
       padding: 6px 20px; font-size: 12px; background: #217346; color: #fff;
@@ -446,13 +460,10 @@
       #gomokuBoard td .stone { width: 18px; height: 18px; }
 
       /* 2048 */
-      #game2048Board {
-        grid-template-columns: repeat(4, 62px); grid-template-rows: repeat(4, 62px);
-        gap: 5px; padding: 5px;
-      }
-      .tile-cell { width: 62px; height: 62px; font-size: 20px; }
-      .tile-128, .tile-256, .tile-512 { font-size: 17px; }
-      .tile-1024, .tile-2048 { font-size: 14px; }
+      #game2048Board { --cell: 62px; --gap: 5px; --pad: 5px; }
+      .tile-inner { font-size: 20px; }
+      .tile-128 .tile-inner, .tile-256 .tile-inner, .tile-512 .tile-inner { font-size: 17px; }
+      .tile-1024 .tile-inner, .tile-2048 .tile-inner { font-size: 14px; }
 
       /* 지뢰찾기 */
       #mineBoard td { width: 28px; height: 28px; font-size: 13px; }
@@ -484,13 +495,10 @@
     }
 
     @media (max-width: 400px) {
-      #game2048Board {
-        grid-template-columns: repeat(4, 52px); grid-template-rows: repeat(4, 52px);
-        gap: 4px; padding: 4px;
-      }
-      .tile-cell { width: 52px; height: 52px; font-size: 17px; }
-      .tile-128, .tile-256, .tile-512 { font-size: 14px; }
-      .tile-1024, .tile-2048 { font-size: 11px; }
+      #game2048Board { --cell: 52px; --gap: 4px; --pad: 4px; }
+      .tile-inner { font-size: 17px; }
+      .tile-128 .tile-inner, .tile-256 .tile-inner, .tile-512 .tile-inner { font-size: 14px; }
+      .tile-1024 .tile-inner, .tile-2048 .tile-inner { font-size: 11px; }
       #gomokuBoard th { width: 18px; height: 16px; font-size: 7px; }
       #gomokuBoard td { width: 18px; height: 18px; }
       #gomokuBoard td .stone { width: 14px; height: 14px; }
@@ -1565,17 +1573,87 @@
     let board2048 = [];
     let score2048 = 0;
     let game2048Over = false;
+    let tileIdCounter2048 = 0;
+    let grid2048 = []; // 4x4 of tile objects or null
+    let animating2048 = false;
+    const ANIM_DURATION = 120;
+
+    function get2048Sizes() {
+      const s = getComputedStyle($('game2048Board'));
+      return {
+        cell: parseInt(s.getPropertyValue('--cell')),
+        gap: parseInt(s.getPropertyValue('--gap')),
+        pad: parseInt(s.getPropertyValue('--pad'))
+      };
+    }
+
+    function setTilePos2048(el, row, col) {
+      const {cell, gap, pad} = get2048Sizes();
+      el.style.transform = `translate(${pad + col*(cell+gap)}px, ${pad + row*(cell+gap)}px)`;
+    }
+
+    function createTileEl2048(tile) {
+      const el = document.createElement('div');
+      el.className = 'tile-cell tile-new';
+      const inner = document.createElement('div');
+      const cls = tile.value <= 2048 ? `tile-${tile.value}` : 'tile-super';
+      inner.className = `tile-inner ${cls}`;
+      inner.textContent = tile.value;
+      el.appendChild(inner);
+      setTilePos2048(el, tile.row, tile.col);
+      tile.el = el;
+      $('game2048Board').appendChild(el);
+      return el;
+    }
+
+    function updateTileEl2048(tile) {
+      const inner = tile.el.querySelector('.tile-inner');
+      const cls = tile.value <= 2048 ? `tile-${tile.value}` : 'tile-super';
+      inner.className = `tile-inner ${cls}`;
+      inner.textContent = tile.value;
+    }
+
+    function buildBgCells2048() {
+      const $b = $('game2048Board');
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
+        const bg = document.createElement('div');
+        bg.className = 'bg2048';
+        setTilePos2048(bg, r, c);
+        $b.appendChild(bg);
+      }
+    }
+
+    function boardFromGrid2048() {
+      board2048 = Array.from({length:4}, (_,r) =>
+        Array.from({length:4}, (_,c) => grid2048[r][c] ? grid2048[r][c].value : 0)
+      );
+    }
+
+    function addTile2048() {
+      const empty = [];
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++)
+        if (!grid2048[r][c]) empty.push([r,c]);
+      if (!empty.length) return null;
+      const [r,c] = empty[Math.floor(Math.random()*empty.length)];
+      const tile = {id: ++tileIdCounter2048, value: Math.random()<0.9?2:4, row:r, col:c, el:null};
+      grid2048[r][c] = tile;
+      createTileEl2048(tile);
+      return tile;
+    }
 
     function init2048() {
-      board2048 = Array.from({ length: 4 }, () => Array(4).fill(0));
-      prev2048 = Array.from({ length: 4 }, () => Array(4).fill(0));
-      merged2048 = new Set();
-      newTile2048 = null;
+      const $b = $('game2048Board');
+      $b.innerHTML = '';
+      grid2048 = Array.from({length:4}, ()=>Array(4).fill(null));
       score2048 = 0;
       game2048Over = false;
-      add2048Tile();
-      add2048Tile();
-      render2048();
+      animating2048 = false;
+      buildBgCells2048();
+      addTile2048();
+      addTile2048();
+      boardFromGrid2048();
+      $('score2048').textContent = score2048;
+      $statusRight.textContent = `점수: ${score2048}`;
       sync2048();
     }
 
@@ -1584,114 +1662,107 @@
       socket.emit('2048:reset');
     }
 
-    function add2048Tile() {
-      const empty = [];
-      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) if (board2048[r][c] === 0) empty.push([r, c]);
-      if (empty.length === 0) return;
-      const [r, c] = empty[Math.floor(Math.random() * empty.length)];
-      board2048[r][c] = Math.random() < 0.9 ? 2 : 4;
-      newTile2048 = [r, c];
-    }
-
-    let prev2048 = Array.from({ length: 4 }, () => Array(4).fill(0));
-    let merged2048 = new Set();
-    let newTile2048 = null;
-
-    function render2048() {
-      const $board = $('game2048Board');
-      $board.innerHTML = '';
-      for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
-          const v = board2048[r][c];
-          const cls = v === 0 ? 'tile-0' : (v <= 2048 ? `tile-${v}` : 'tile-super');
-          const div = document.createElement('div');
-          div.className = `tile-cell ${cls}`;
-          if (v !== 0) {
-            const key = `${r},${c}`;
-            if (newTile2048 && newTile2048[0] === r && newTile2048[1] === c) {
-              div.classList.add('tile-new');
-            } else if (merged2048.has(key)) {
-              div.classList.add('tile-merged');
-            }
-          }
-          div.textContent = v || '';
-          $board.appendChild(div);
-        }
-      }
-      $('score2048').textContent = score2048;
-      $statusRight.textContent = `점수: ${score2048}`;
-    }
-
     function sync2048() {
       socket.emit('2048:update', { board: board2048, score: score2048, gameOver: game2048Over });
     }
 
-    function slide2048(row, mergedIndices) {
-      let arr = row.filter(v => v !== 0);
-      const result = [];
-      let i = 0;
-      while (i < arr.length) {
-        if (i + 1 < arr.length && arr[i] === arr[i + 1]) {
-          const merged = arr[i] * 2;
-          result.push(merged);
-          if (mergedIndices) mergedIndices.push(result.length - 1);
-          score2048 += merged;
-          i += 2;
-        } else {
-          result.push(arr[i]);
-          i++;
-        }
+    function dirToRC2048(dir, i, j) {
+      switch(dir) {
+        case 'left':  return [i, j];
+        case 'right': return [i, 3-j];
+        case 'up':    return [j, i];
+        case 'down':  return [3-j, i];
       }
-      while (result.length < 4) result.push(0);
-      return result;
+    }
+
+    function setTileRC2048(tile, dir, i, idx) {
+      const [r,c] = dirToRC2048(dir, i, idx);
+      tile.row = r; tile.col = c;
     }
 
     function move2048(dir) {
-      if (game2048Over) return;
-      prev2048 = board2048.map(r => [...r]);
-      merged2048 = new Set();
-      newTile2048 = null;
-      const prev = JSON.stringify(board2048);
+      if (game2048Over || animating2048) return;
 
-      if (dir === 'left') {
-        for (let r = 0; r < 4; r++) {
-          const mi = [];
-          board2048[r] = slide2048(board2048[r], mi);
-          mi.forEach(c => merged2048.add(`${r},${c}`));
+      let moved = false;
+      const merges = []; // {survivor, absorbed, newValue}
+
+      for (let i = 0; i < 4; i++) {
+        // collect tiles in this line
+        const line = [];
+        for (let j = 0; j < 4; j++) {
+          const [r,c] = dirToRC2048(dir, i, j);
+          if (grid2048[r][c]) line.push(grid2048[r][c]);
         }
-      } else if (dir === 'right') {
-        for (let r = 0; r < 4; r++) {
-          const mi = [];
-          board2048[r] = slide2048(board2048[r].slice().reverse(), mi).reverse();
-          mi.forEach(c => merged2048.add(`${r},${3 - c}`));
+
+        // slide and merge
+        const result = []; // tiles that survive
+        let pos = 0, k = 0;
+        while (k < line.length) {
+          if (k+1 < line.length && line[k].value === line[k+1].value) {
+            const newVal = line[k].value * 2;
+            score2048 += newVal;
+            // both slide to the merge position
+            setTileRC2048(line[k], dir, i, pos);
+            setTileRC2048(line[k+1], dir, i, pos);
+            merges.push({survivor: line[k], absorbed: line[k+1], newValue: newVal});
+            result.push(line[k]);
+            pos++; k += 2;
+          } else {
+            setTileRC2048(line[k], dir, i, pos);
+            result.push(line[k]);
+            pos++; k++;
+          }
         }
-      } else if (dir === 'up') {
-        for (let c = 0; c < 4; c++) {
-          const col = [board2048[0][c], board2048[1][c], board2048[2][c], board2048[3][c]];
-          const mi = [];
-          const slid = slide2048(col, mi);
-          for (let r = 0; r < 4; r++) board2048[r][c] = slid[r];
-          mi.forEach(r => merged2048.add(`${r},${c}`));
-        }
-      } else if (dir === 'down') {
-        for (let c = 0; c < 4; c++) {
-          const col = [board2048[3][c], board2048[2][c], board2048[1][c], board2048[0][c]];
-          const mi = [];
-          const slid = slide2048(col, mi);
-          for (let r = 0; r < 4; r++) board2048[3 - r][c] = slid[r];
-          mi.forEach(r => merged2048.add(`${3 - r},${c}`));
+
+        // check if anything moved
+        for (let j = 0; j < 4; j++) {
+          const [r,c] = dirToRC2048(dir, i, j);
+          const expected = j < result.length ? result[j] : null;
+          if (grid2048[r][c] !== expected) moved = true;
+          grid2048[r][c] = expected;
         }
       }
-      if (JSON.stringify(board2048) !== prev) {
-        add2048Tile();
-        render2048();
+
+      if (!moved) return;
+
+      animating2048 = true;
+
+      // update positions (CSS transition animates the slide)
+      const allTiles = [];
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++)
+        if (grid2048[r][c]) allTiles.push(grid2048[r][c]);
+      // also update absorbed tiles' positions
+      merges.forEach(m => {
+        setTilePos2048(m.absorbed.el, m.absorbed.row, m.absorbed.col);
+        m.absorbed.el.style.zIndex = '0';
+      });
+      allTiles.forEach(t => setTilePos2048(t.el, t.row, t.col));
+
+      // after animation: finalize merges, spawn new tile
+      setTimeout(() => {
+        merges.forEach(m => {
+          m.absorbed.el.remove();
+          m.survivor.value = m.newValue;
+          updateTileEl2048(m.survivor);
+          m.survivor.el.classList.remove('tile-new');
+          m.survivor.el.classList.add('tile-merged');
+          setTimeout(() => m.survivor.el.classList.remove('tile-merged'), 200);
+        });
+
+        addTile2048();
+        boardFromGrid2048();
+        $('score2048').textContent = score2048;
+        $statusRight.textContent = `점수: ${score2048}`;
         sync2048();
+
         if (check2048GameOver()) {
           game2048Over = true;
           sync2048();
           $statusRight.textContent = `게임 오버! 나: ${score2048} | 상대: ${opponent2048Score}`;
         }
-      }
+
+        animating2048 = false;
+      }, ANIM_DURATION);
     }
 
     function check2048GameOver() {
@@ -1702,6 +1773,16 @@
       }
       return true;
     }
+
+    // 창 크기 변경시 타일 위치 업데이트
+    window.addEventListener('resize', () => {
+      if (currentMode !== '2048') return;
+      document.querySelectorAll('.bg2048').forEach((bg, idx) => {
+        setTilePos2048(bg, Math.floor(idx/4), idx%4);
+      });
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++)
+        if (grid2048[r][c]) setTilePos2048(grid2048[r][c].el, r, c);
+    });
 
     socket.on('2048:update', () => {});
     socket.on('2048:reset', () => { init2048(); });
